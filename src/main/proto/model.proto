@@ -1,0 +1,69 @@
+package digital.upgrade.raft;
+
+option java_package = "digital.upgrade.raft";
+option java_outer_classname = "Model";
+
+message PersistentState {
+  required int32 currentTermIndex = 1 [default = 0];
+  required string votedUrn = 2;
+  repeated string log = 3;
+  // The log is only assumed to be stored with the min not replicated onto the
+  // clients therefore the base is used to offset the data that is stored
+  required int32 logBaseIndex = 4;
+}
+
+message VolatileState {
+  required int32 commitIndex = 1 [default = 0];
+  required int32 lastApplied = 2 [default = 0];
+}
+
+// Initialised after an election
+message VolatileLeaderState {
+  // Initialised to the leader last log index + 1 called nextIndex
+  // Index of the next log entry to send to the server
+  repeated int32 slaveIndexSend = 1;
+  // Index of the highest log entry replicated on the server
+  repeated int32 slaveIndexReceived = 2;
+}
+
+// Invoked by the leader to replicate log entries.
+message AppendEntries {
+  // The term over which the election takes place
+  required string term = 1;
+  required string leaderUrn = 2;
+  // The oldest log index is the index for the last log index received
+  required int32 lastLogIndex = 3;
+  required string lastLogTerm = 4;
+  // log entries to append to the log
+  repeated string entries = 5;
+  // The leaders commit index
+  required int32 leaderCommitIndex = 6;
+}
+
+message AppendResponse {
+  required string term = 1;
+  required bool success = 2;
+}
+
+message RequestVote {
+  required string term = 1;
+  required string candidateUrn = 2;
+  required int32 lastLogIndex = 3;
+  required int32 lastLogTerm = 4;
+}
+
+message VoteResponse {
+  // The current term for the candidate to update its self
+  required string term = 1;
+  // True if the candidate received the vote and agreed
+  required bool voteGranted = 2;
+}
+
+message Node {
+  required string urn = 1;
+  required string url = 2;
+}
+
+message Nodes {
+  repeated Node nodes = 1;
+}
