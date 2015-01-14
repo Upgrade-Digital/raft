@@ -59,9 +59,22 @@ message VoteResponse {
   required bool voteGranted = 2;
 }
 
+message MessageContainer {
+  optional AppendEntries appendEntries = 1;
+  optional AppendResponse appendResponse = 2;
+  optional RequestVote requestVote = 3;
+  optional VoteResponse voteResponse = 4;
+}
+
 message Node {
   required string urn = 1;
   required string url = 2;
+}
+
+enum NodeState {
+  LEADER = 1;
+  FOLLOWER = 2;
+  CANDIDATE = 3;
 }
 
 message Nodes {
