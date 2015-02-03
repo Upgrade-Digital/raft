@@ -37,6 +37,7 @@ public class Raft implements MessageHandler {
       return result.setSuccess(false)
           .build();
     }
+
     // Term previousLogTerm = entry.getLastLogTerm();
     // return false if the log term is not the same term at the same index
 
@@ -47,6 +48,8 @@ public class Raft implements MessageHandler {
 
     // if the leader commit is greater than the local commit clock set the
     // local clock to be min(leader commit or index of last new entry here)
+    return result.setSuccess(false)
+        .build();
   }
 
   @Override
