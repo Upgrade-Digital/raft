@@ -32,6 +32,11 @@
       <artifactId>slf4j-api</artifactId>
       <version>1.7.7</version>
     </dependency>
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>6.8.17</version>
+    </dependency>
   </dependencies>
 
   <build>
