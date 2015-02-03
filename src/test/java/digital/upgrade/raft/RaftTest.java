@@ -75,7 +75,7 @@ public class RaftTest {
         .setLastLogTerm(7)
         .setTerm(firstTerm)
         .build());
-    assertNotNull(result, "Vote requeste should not be null");
+    assertNotNull(result, "Vote requested should not be null");
     assertTrue(result.getVoteGranted(), "Vote should be granted on vanilla request");
     // so the first one worked, let's push another, and see that it continues
     // (note that this does not take account of time yet)

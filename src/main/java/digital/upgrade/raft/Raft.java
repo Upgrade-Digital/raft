@@ -57,6 +57,7 @@ public class Raft implements MessageHandler {
     Term vote = voteRequest.getTerm();
     Term myTerm = currentTerm(vote.getResource());
     VoteResult.Builder result = VoteResult.newBuilder();
+    result.setTerm(myTerm);
     if (vote.getClock() < myTerm.getClock()) {
       result.setVoteGranted(false);
     } else {
