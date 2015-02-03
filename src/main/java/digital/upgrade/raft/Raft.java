@@ -30,7 +30,23 @@ public class Raft implements MessageHandler {
 
   @Override
   public AppendResult appendEntry(Entry entry) {
-    return null;
+    AppendResult.Builder result = AppendResult.newBuilder();
+    Term append = entry.getTerm();
+    Term myTerm = currentTerms.get(append);
+    if (appendIsStale(append, myTerm)) {
+      return result.setSuccess(false)
+          .build();
+    }
+    // Term previousLogTerm = entry.getLastLogTerm();
+    // return false if the log term is not the same term at the same index
+
+    // if an existing entry conflicts with a new one delete the existing entry
+    // as well as all that follow it
+
+    // append new entries not in the log
+
+    // if the leader commit is greater than the local commit clock set the
+    // local clock to be min(leader commit or index of last new entry here)
   }
 
   @Override
@@ -49,6 +65,10 @@ public class Raft implements MessageHandler {
       }
     }
     return result.build();
+  }
+
+  boolean appendIsStale(Term append, Term myTerm) {
+    return append.getClock() < myTerm.getClock();
   }
 
   void persistUpdatedVote(Term myTerm, Term vote) {

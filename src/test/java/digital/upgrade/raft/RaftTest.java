@@ -1,14 +1,16 @@
 package digital.upgrade.raft;
 
+import digital.upgrade.raft.Model.Term;
+import digital.upgrade.raft.Model.Vote;
+import digital.upgrade.raft.Model.VoteResult;
+import org.testng.annotations.Test;
+
+import java.util.UUID;
+
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.fail;
-
-import digital.upgrade.raft.Model.Term;
-import org.testng.annotations.Test;
-
-import java.util.UUID;
 
 /**
  * Test the initialisation state of Raft.
@@ -28,9 +30,29 @@ public class RaftTest {
     assertFalse(current.hasNode(), "Should not have a candidate");
   }
 
+
+  /**
+   * Test the null candidate election succeeds.
+   */
   @Test
-  public void testNullLocalCandidate() {
-    fail();
+  public void testVoteNullLocalCandidate() {
+    Raft raft = newRaft();
+    String resource = newResource();
+    String candidate = newResource();
+    Term testTerm = Term.newBuilder()
+        .setClock(4)
+        .setNode(candidate)
+        .setResource(resource)
+        .build();
+    VoteResult result = raft.requestVote(Vote.newBuilder()
+        .setCandidate(candidate)
+        .setLastLogIndex(997)
+        .setLastLogTerm(844)
+        .setTerm(testTerm)
+        .build());
+    assertNotNull(result, "Vote result should not be null");
+    assertEquals(result.getVoteGranted(), true, "Vote should be granted");
+    assertEquals(result.getTerm(), testTerm, "Expected term update");
   }
 
   @Test
@@ -56,6 +78,16 @@ public class RaftTest {
   @Test
   public void testRejectedVoteNotPersisted() {
     fail();
+  }
+
+  @Test
+  public void testAppendIsStale() {
+    fail();
+  }
+
+  @Test
+  public void testAppendIsNotStale() {
+
   }
 
   private Raft newRaft() {
