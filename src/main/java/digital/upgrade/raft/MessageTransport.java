@@ -1,11 +1,11 @@
 package digital.upgrade.raft;
 
-import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 import digital.upgrade.raft.Model.MessageContainer;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,7 +17,7 @@ import java.util.List;
 public class MessageTransport {
 
   private volatile InputStream in;
-  private volatile List<MessageHandler> handlers = Lists.newArrayList();
+  private volatile List<MessageHandler> handlers = new ArrayList<>();
 
   public MessageTransport() {}
 
