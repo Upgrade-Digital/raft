@@ -1,0 +1,105 @@
+package digital.upgrade.replication.raft;
+
+option java_package = "digital.upgrade.replication.raft";
+option java_outer_classname = "Model";
+
+message Term {
+  required string resource = 1;
+  required int64 clock = 2;
+  optional string node = 3;
+}
+
+message LogEntry {
+  required int64 leaderTerm = 1;
+  required Entry entry = 2;
+  required int64 leaderClock = 3;
+}
+
+message PersistentState {
+  repeated Term currentTerms = 1;
+  repeated LogEntry log = 2;
+  // The log is only assumed to be stored with the min not replicated onto the
+  // clients therefore the base is used to offset the data that is stored
+  required int32 logBaseIndex = 3;
+}
+
+message VolatileState {
+  required int32 commitIndex = 1 [default = 0];
+  required int32 lastApplied = 2 [default = 0];
+}
+
+
+message SendOffset {
+  required string node = 1;
+  required int32 nextIndex = 2;
+}
+
+message Replicated {
+  required string node = 1;
+  required int32 receivedIndex = 2;
+}
+
+
+// Initialised after an election
+message VolatileLeaderState {
+  // Initialised to the leader last log index + 1 called nextIndex
+  // Index of the next log entry to send to the server
+  repeated SendOffset send = 1;
+  // Index of the highest log entry replicated on the server
+  repeated Replicated received = 2;
+}
+
+// Invoked by the leader to replicate log entries.
+message Entry {
+  // The term over which the election takes place
+  required Term term = 1;
+  required string leaderNode = 2;
+  // The oldest log index is the index for the last log index received
+  required int32 lastLogIndex = 3;
+  required string lastLogTerm = 4;
+  // log entries to append to the log
+  repeated string entries = 5;
+  // The leaders commit index
+  required int32 leaderCommitIndex = 6;
+}
+
+message AppendResult {
+  required Term term = 1;
+  required bool success = 2;
+}
+
+message Vote {
+  required Term term = 1;
+  required string candidate = 2;
+  required int32 lastLogIndex = 3;
+  required int32 lastLogTerm = 4;
+}
+
+message VoteResult {
+  // The current term for the candidate to update its self
+  required Term term = 1;
+  // True if the candidate received the vote and agreed
+  required bool voteGranted = 2;
+}
+
+message Node {
+  required string urn = 1;
+  required string url = 2;
+}
+
+enum NodeState {
+  LEADER = 1;
+  FOLLOWER = 2;
+  CANDIDATE = 3;
+}
+
+message Nodes {
+  repeated Node nodes = 1;
+}
+
+message MessageContainer {
+  optional Entry appendEntry = 1;
+  optional AppendResult appendResult = 2;
+  optional Vote requestVote = 3;
+  optional VoteResult voteResponse = 4;
+}
