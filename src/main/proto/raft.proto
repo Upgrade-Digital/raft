@@ -3,6 +3,24 @@ package digital.upgrade.replication.raft;
 option java_package = "digital.upgrade.replication.raft";
 option java_outer_classname = "Model";
 
+message PersistentState {
+    required uint64 term = 1;
+    optional Peer votedFor = 2;
+}
+
+message Peer {
+    required string uuid = 1;
+    optional string publicKey = 2;
+    optional string privateKey = 3;
+}
+
+message Entry {
+   required string uuid = 1;
+   required uint64 term = 2;
+   required bytes command = 3;
+}
+
+
 message Term {
   required string resource = 1;
   required int64 clock = 2;
@@ -15,7 +33,7 @@ message LogEntry {
   required int64 leaderClock = 3;
 }
 
-message PersistentState {
+message State {
   repeated Term currentTerms = 1;
   repeated LogEntry log = 2;
   // The log is only assumed to be stored with the min not replicated onto the
