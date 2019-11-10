@@ -54,6 +54,7 @@ achieve this the goals of the project include:
   * Interface segregation: Lots of small interfaces with strong encapsulation
     of specific roles.
   * Dependency inversion: Rely heavily on interface definitions.
+* Minimal dependencies on third party libraries.
 
 # Contributing / Building
 
