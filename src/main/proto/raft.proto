@@ -1,11 +1,13 @@
+syntax = "proto2";
 package digital.upgrade.replication.raft;
 
 option java_package = "digital.upgrade.replication.raft";
-option java_outer_classname = "Model";
+option java_outer_classname = "Raft";
 
 message PersistentState {
-    required uint64 term = 1;
-    optional Peer votedFor = 2;
+    required string uuid = 1;
+    required uint64 term = 2;
+    optional Peer votedFor = 3;
 }
 
 message Peer {
@@ -14,7 +16,7 @@ message Peer {
     optional string privateKey = 3;
 }
 
-message Entry {
+message CommitEntry {
    required string uuid = 1;
    required uint64 term = 2;
    required bytes command = 3;

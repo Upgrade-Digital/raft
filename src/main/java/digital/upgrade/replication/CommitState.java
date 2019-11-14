@@ -1,10 +1,18 @@
 package digital.upgrade.replication;
 
+import digital.upgrade.replication.raft.RaftReplicator;
+
 /**
  * CommitState encapsulates information related to an attempt to commit a specific
  * commit message.
  */
-public class CommitState {
+public final class CommitState {
+
+    private long time;
+
+    public long getTime() {
+        return time;
+    }
 
     private CommitState() {}
 
@@ -27,6 +35,11 @@ public class CommitState {
 
         public CommitState build() {
             return result;
+        }
+
+        public Builder setTime(long time) {
+            result.time = time;
+            return this;
         }
     }
 }

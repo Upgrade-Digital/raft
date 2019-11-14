@@ -7,11 +7,16 @@ import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertNotNull;
 
-public class RaftReplicatorTest {
+public final class RaftReplicatorTest {
 
     @Test
     public void testCommitReturnsCommitState() {
-        CommitReplicator replicator = new RaftReplicator();
+        ClockSource clock = new SystemClock();
+        CommitReplicator replicator = RaftReplicator.newBuilder()
+                .setClockSource(clock)
+                .setStateManager(new InMemoryStateManager(clock))
+                .setCommitHandler(new InMemoryCommitHandler(clock))
+                .build();
         assertNotNull(replicator.commit(CommitMessage.newBuilder().build()));
     }
 }
