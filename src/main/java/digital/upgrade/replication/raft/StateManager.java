@@ -6,7 +6,7 @@ import static digital.upgrade.replication.raft.Raft.PersistentState;
 
 public interface StateManager {
 
-    boolean exists();
+    boolean notExists();
 
     PersistentState read() throws IOException;
 

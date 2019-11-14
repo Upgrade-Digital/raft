@@ -15,13 +15,13 @@ public final class InMemoryStateManager implements StateManager {
     }
 
     @Override
-    public boolean exists() {
-        return null != state;
+    public boolean notExists() {
+        return null == state;
     }
 
     @Override
     public PersistentState read() throws IOException {
-        if (!exists()) {
+        if (notExists()) {
             throw new IOException("persistent state has not been saved");
         }
         return state;

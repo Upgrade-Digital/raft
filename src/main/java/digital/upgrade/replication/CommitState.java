@@ -1,7 +1,5 @@
 package digital.upgrade.replication;
 
-import digital.upgrade.replication.raft.RaftReplicator;
-
 /**
  * CommitState encapsulates information related to an attempt to commit a specific
  * commit message.

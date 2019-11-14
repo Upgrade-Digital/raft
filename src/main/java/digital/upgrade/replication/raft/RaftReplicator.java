@@ -4,6 +4,7 @@ import digital.upgrade.replication.CommitHandler;
 import digital.upgrade.replication.CommitReplicator;
 import digital.upgrade.replication.CommitState;
 import digital.upgrade.replication.Model;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,7 @@ public final class RaftReplicator implements CommitReplicator {
     }
 
     private void restoreState() throws IOException {
-        if (!stateManager.exists()) {
+        if (stateManager.notExists()) {
             stateManager.write(PersistentState.newBuilder()
                     .setTerm(INITIAL_TERM_VALUE)
                     .setUuid(UUID.randomUUID().toString())
