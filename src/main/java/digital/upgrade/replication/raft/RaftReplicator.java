@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.UUID;
 
+import static digital.upgrade.replication.raft.Raft.Peer;
 import static digital.upgrade.replication.raft.Raft.PersistentState;
 
 public final class RaftReplicator implements CommitReplicator {
@@ -23,6 +24,7 @@ public final class RaftReplicator implements CommitReplicator {
     private ClockSource clock;
 
     private long currentTerm = -1;
+    private Peer votedFor;
 
     private RaftReplicator() {}
 
@@ -36,12 +38,16 @@ public final class RaftReplicator implements CommitReplicator {
 
     @Override
     public void run() {
+        startup();
+
+    }
+
+    void startup() {
         try {
             restoreState();
         } catch (IOException e) {
             LOG.error("Error restoring persistent state");
         }
-
     }
 
     private void restoreState() throws IOException {
@@ -53,6 +59,7 @@ public final class RaftReplicator implements CommitReplicator {
         }
         PersistentState persistentState = stateManager.read();
         currentTerm = persistentState.getTerm();
+        votedFor = persistentState.hasVotedFor()? persistentState.getVotedFor() : null;
     }
 
     public static Builder newBuilder() {
@@ -62,6 +69,11 @@ public final class RaftReplicator implements CommitReplicator {
     public long getCurrentTerm() {
         return currentTerm;
     }
+
+    public boolean hasVotedInTerm() {
+        return null != votedFor;
+    }
+
 
     public static final class Builder {
 

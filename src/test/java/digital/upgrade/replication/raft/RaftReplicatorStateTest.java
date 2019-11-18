@@ -8,8 +8,7 @@ import org.testng.annotations.Test;
 import java.util.Map;
 
 import static digital.upgrade.replication.Model.CommitMessage;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.*;
 
 public class RaftReplicatorStateTest {
 
@@ -28,9 +27,22 @@ public class RaftReplicatorStateTest {
                 .setStateManager(stateManager)
                 .setCommitHandler(commitHandler)
                 .build();
-        // TODO implement replicator state / startup wait
-        replicator.run();
+        replicator.startup();
         assertEquals(replicator.getCurrentTerm(), 0L);
+    }
+
+    @Test
+    public void votedForInitiallyNotSet() {
+        ClockSource clock = new SystemClock();
+        InMemoryStateManager stateManager = new InMemoryStateManager(clock);
+        InMemoryCommitHandler commitHandler = new InMemoryCommitHandler(clock);
+        RaftReplicator replicator = RaftReplicator.newBuilder()
+                .setClockSource(clock)
+                .setStateManager(stateManager)
+                .setCommitHandler(commitHandler)
+                .build();
+        replicator.startup();
+        assertFalse(replicator.hasVotedInTerm());
     }
 
     /**
