@@ -78,6 +78,14 @@ public final class RaftReplicator implements CommitReplicator {
         return null != votedFor;
     }
 
+    public CommitIndex getCommittedIndex() {
+        return committed;
+    }
+
+    public CommitIndex getAppliedIndex() {
+        return applied;
+    }
+
 
     public static final class Builder {
 

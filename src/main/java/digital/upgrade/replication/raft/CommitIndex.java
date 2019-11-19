@@ -60,7 +60,7 @@ public class CommitIndex {
         return String.format("{%d,%d}", mostSignificant, leastSignificant);
     }
 
-    protected long getMostSignificantLong() {
+    long getMostSignificantLong() {
         return mostSignificant;
     }
 }

@@ -1,7 +1,6 @@
 package digital.upgrade.replication.raft;
 
 import com.google.protobuf.ByteString;
-import digital.upgrade.replication.CommitReplicator;
 import digital.upgrade.replication.CommitState;
 import org.testng.annotations.Test;
 
@@ -19,29 +18,13 @@ public class RaftReplicatorStateTest {
      */
     @Test
     public void currentTermInitialisedZeroOnFirstBoot() {
-        ClockSource clock = new SystemClock();
-        InMemoryStateManager stateManager = new InMemoryStateManager(clock);
-        InMemoryCommitHandler commitHandler = new InMemoryCommitHandler(clock);
-        RaftReplicator replicator = RaftReplicator.newBuilder()
-                .setClockSource(clock)
-                .setStateManager(stateManager)
-                .setCommitHandler(commitHandler)
-                .build();
-        replicator.startup();
+        RaftReplicator replicator = startedReplicator();
         assertEquals(replicator.getCurrentTerm(), 0L);
     }
 
     @Test
     public void votedForInitiallyNotSet() {
-        ClockSource clock = new SystemClock();
-        InMemoryStateManager stateManager = new InMemoryStateManager(clock);
-        InMemoryCommitHandler commitHandler = new InMemoryCommitHandler(clock);
-        RaftReplicator replicator = RaftReplicator.newBuilder()
-                .setClockSource(clock)
-                .setStateManager(stateManager)
-                .setCommitHandler(commitHandler)
-                .build();
-        replicator.startup();
+        RaftReplicator replicator = startedReplicator();
         assertFalse(replicator.hasVotedInTerm());
     }
 
@@ -53,12 +36,14 @@ public class RaftReplicatorStateTest {
         ClockSource clock = new CallCountingClock();
         InMemoryStateManager stateManager = new InMemoryStateManager(clock);
         InMemoryCommitHandler commitHandler = new InMemoryCommitHandler(clock);
-        CommitReplicator replicator = RaftReplicator.newBuilder()
+
+        RaftReplicator replicator = RaftReplicator.newBuilder()
                 .setClockSource(clock)
                 .setStateManager(stateManager)
                 .setCommitHandler(commitHandler)
                 .build();
-        new Thread(replicator).start();
+        replicator.startup();
+
         CommitMessage message = CommitMessage.newBuilder()
                 .setScope("a")
                 .setData(ByteString.EMPTY)
@@ -70,5 +55,30 @@ public class RaftReplicatorStateTest {
         assertEquals(commits.size(), 1, "Expected 1 commit");
         assertEquals(commits.get(1L), message, "Expected message to be at time 1");
         assertEquals(result.getTime(), 2, "Commit should be created after handler write");
+    }
+
+    @Test
+    public void testRaftInitialCommitZero() {
+        RaftReplicator replicator = startedReplicator();
+        assertEquals(replicator.getCommittedIndex(), new CommitIndex(0L));
+    }
+
+    @Test
+    public void testRaftInitialAppliedIndex() {
+        RaftReplicator replicator = startedReplicator();
+        assertEquals(replicator.getAppliedIndex(), new CommitIndex(0L));
+    }
+
+    private RaftReplicator startedReplicator() {
+        ClockSource clock = new CallCountingClock();
+        InMemoryStateManager stateManager = new InMemoryStateManager(clock);
+        InMemoryCommitHandler commitHandler = new InMemoryCommitHandler(clock);
+        RaftReplicator replicator = RaftReplicator.newBuilder()
+                .setClockSource(clock)
+                .setStateManager(stateManager)
+                .setCommitHandler(commitHandler)
+                .build();
+        replicator.startup();
+        return replicator;
     }
 }

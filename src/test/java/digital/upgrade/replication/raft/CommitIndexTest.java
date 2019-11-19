@@ -2,6 +2,8 @@ package digital.upgrade.replication.raft;
 
 import org.testng.annotations.Test;
 
+import java.util.UUID;
+
 import static org.testng.Assert.assertEquals;
 
 public class CommitIndexTest {
@@ -35,5 +37,10 @@ public class CommitIndexTest {
         System.out.print(result);
         System.out.println(Long.MIN_VALUE);
         System.out.println(result.getMostSignificantLong());
+    }
+
+    @Test
+    public void testUuidRepresentation() {
+        assertEquals(new UUID(77L, 99L), new CommitIndex(77L, 99L).toUuid());
     }
 }
