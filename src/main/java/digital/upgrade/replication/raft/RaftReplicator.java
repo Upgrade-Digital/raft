@@ -57,6 +57,10 @@ public final class RaftReplicator implements CommitReplicator {
             stateManager.write(PersistentState.newBuilder()
                     .setTerm(INITIAL_TERM_VALUE)
                     .setUuid(UUID.randomUUID().toString())
+                    .setCommittedLeast(0)
+                    .setCommittedMost(0)
+                    .setAppliedLeast(0)
+                    .setAppliedMost(0)
                     .build());
         }
         PersistentState persistentState = stateManager.read();
@@ -70,19 +74,19 @@ public final class RaftReplicator implements CommitReplicator {
         return new Builder();
     }
 
-    public long getCurrentTerm() {
+    long getCurrentTerm() {
         return currentTerm;
     }
 
-    public boolean hasVotedInTerm() {
+    boolean hasVotedInTerm() {
         return null != votedFor;
     }
 
-    public CommitIndex getCommittedIndex() {
+    CommitIndex getCommittedIndex() {
         return committed;
     }
 
-    public CommitIndex getAppliedIndex() {
+    CommitIndex getAppliedIndex() {
         return applied;
     }
 
