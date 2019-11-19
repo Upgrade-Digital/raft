@@ -11,4 +11,8 @@ public interface StateManager {
     PersistentState read() throws IOException;
 
     void write(PersistentState state);
+
+    CommitIndex getHighestCommittedIndex();
+
+    CommitIndex getHighestAppliedIndex();
 }

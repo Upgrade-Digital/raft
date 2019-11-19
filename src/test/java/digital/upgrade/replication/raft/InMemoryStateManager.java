@@ -6,6 +6,7 @@ import static digital.upgrade.replication.raft.Raft.PersistentState;
 
 public final class InMemoryStateManager implements StateManager {
 
+    public static final CommitIndex INITIAL_INDEX = new CommitIndex(0L, 0L);
     private final ClockSource clock;
     private PersistentState state;
     private long lastWriteTime = -1;
@@ -31,6 +32,16 @@ public final class InMemoryStateManager implements StateManager {
     public void write(PersistentState state) {
         this.lastWriteTime = clock.currentTime();
         this.state = state;
+    }
+
+    @Override
+    public CommitIndex getHighestCommittedIndex() {
+        return INITIAL_INDEX;
+    }
+
+    @Override
+    public CommitIndex getHighestAppliedIndex() {
+        return INITIAL_INDEX;
     }
 
     public long getLastWriteTime() {

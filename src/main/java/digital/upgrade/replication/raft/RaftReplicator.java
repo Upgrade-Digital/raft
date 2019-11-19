@@ -25,6 +25,8 @@ public final class RaftReplicator implements CommitReplicator {
 
     private long currentTerm = -1;
     private Peer votedFor;
+    private CommitIndex committed;
+    private CommitIndex applied;
 
     private RaftReplicator() {}
 
@@ -60,6 +62,8 @@ public final class RaftReplicator implements CommitReplicator {
         PersistentState persistentState = stateManager.read();
         currentTerm = persistentState.getTerm();
         votedFor = persistentState.hasVotedFor()? persistentState.getVotedFor() : null;
+        committed = stateManager.getHighestCommittedIndex();
+        applied = stateManager.getHighestAppliedIndex();
     }
 
     public static Builder newBuilder() {
