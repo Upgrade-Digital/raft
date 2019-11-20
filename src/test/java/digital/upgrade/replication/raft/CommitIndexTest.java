@@ -2,9 +2,10 @@ package digital.upgrade.replication.raft;
 
 import org.testng.annotations.Test;
 
+import java.util.Objects;
 import java.util.UUID;
 
-import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.*;
 
 public class CommitIndexTest {
 
@@ -15,7 +16,7 @@ public class CommitIndexTest {
     }
 
     @Test
-    public void testHashCode() {
+    public void testHashCodeConsistent() {
         assertEquals(new CommitIndex(0L, 77L), new CommitIndex(0L, 77L));
     }
 
@@ -42,5 +43,30 @@ public class CommitIndexTest {
     @Test
     public void testUuidRepresentation() {
         assertEquals(new UUID(77L, 99L), new CommitIndex(77L, 99L).toUuid());
+    }
+
+    @Test
+    public void testNotEqualsNonCommit() {
+        assertNotEquals(new Object(), new CommitIndex(0L));
+    }
+
+    @Test
+    public void testHashCodeValue() {
+        assertEquals(new CommitIndex(0L).hashCode(), Objects.hash(0L, 0L));
+    }
+
+    @Test
+    public void testToString() {
+        assertEquals(new CommitIndex(1L).toString(), "{0,1}");
+    }
+
+    @Test
+    public void testMostSignificantLong() {
+        assertEquals(new CommitIndex(99L, 0L).getMostSignificantLong(), 99L);
+    }
+
+    @Test
+    public void testEquals() {
+        assertEquals(new CommitIndex(777L), new CommitIndex(777L));
     }
 }

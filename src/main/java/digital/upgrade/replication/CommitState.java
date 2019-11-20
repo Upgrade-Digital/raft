@@ -8,6 +8,11 @@ public final class CommitState {
 
     private long time;
 
+    /**
+     * Return the time of commit execution.
+     *
+     * @return commit time in milliseconds.
+     */
     public long getTime() {
         return time;
     }

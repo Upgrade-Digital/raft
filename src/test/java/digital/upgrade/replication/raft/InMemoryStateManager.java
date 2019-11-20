@@ -1,10 +1,13 @@
 package digital.upgrade.replication.raft;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import static digital.upgrade.replication.raft.Raft.PersistentState;
 
 public final class InMemoryStateManager implements StateManager {
+
+    private static final long INITIAL_TERM_VALUE = 0;
 
     private final ClockSource clock;
     private PersistentState state;
@@ -12,6 +15,18 @@ public final class InMemoryStateManager implements StateManager {
 
     InMemoryStateManager(ClockSource clock) {
         this.clock = clock;
+    }
+
+    @Override
+    public void initialiseState() {
+        write(PersistentState.newBuilder()
+                .setTerm(INITIAL_TERM_VALUE)
+                .setUuid(UUID.randomUUID().toString())
+                .setCommittedLeast(0)
+                .setCommittedMost(0)
+                .setAppliedLeast(0)
+                .setAppliedMost(0)
+                .build());
     }
 
     @Override

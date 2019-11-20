@@ -3,20 +3,23 @@ package digital.upgrade.replication.raft;
 import digital.upgrade.replication.CommitHandler;
 import digital.upgrade.replication.CommitReplicator;
 import digital.upgrade.replication.CommitState;
-import digital.upgrade.replication.Model;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.UUID;
 
+import static digital.upgrade.replication.Model.CommitMessage;
 import static digital.upgrade.replication.raft.Raft.Peer;
 import static digital.upgrade.replication.raft.Raft.PersistentState;
 
+/**
+ * Raft implementation of commit replicator which uses election to select a
+ * leader which coordinates commits from clients.
+ */
 public final class RaftReplicator implements CommitReplicator {
 
-    private static final long INITIAL_TERM_VALUE = 0;
     private static final Logger LOG = LoggerFactory.getLogger(RaftReplicator.class);
 
     private StateManager stateManager;
@@ -30,18 +33,28 @@ public final class RaftReplicator implements CommitReplicator {
 
     private RaftReplicator() {}
 
+    /**
+     * Commit message to the replication state synchronously.
+     *
+     * @param message to commit to the state machine across the instances.
+     * @return commit state result for the replication.
+     */
     @Override
-    public CommitState commit(Model.CommitMessage message) {
+    public CommitState commit(CommitMessage message) {
         commitHandler.write(message);
         return CommitState.newBuilder()
                 .setTime(clock.currentTime())
                 .build();
     }
 
+    /**
+     * Runnable implementation for background thread for the raft replicator
+     * which coordinates actions like elections and replication between
+     * raft instances.
+     */
     @Override
     public void run() {
         startup();
-
     }
 
     void startup() {
@@ -54,14 +67,7 @@ public final class RaftReplicator implements CommitReplicator {
 
     private void restoreState() throws IOException {
         if (stateManager.notExists()) {
-            stateManager.write(PersistentState.newBuilder()
-                    .setTerm(INITIAL_TERM_VALUE)
-                    .setUuid(UUID.randomUUID().toString())
-                    .setCommittedLeast(0)
-                    .setCommittedMost(0)
-                    .setAppliedLeast(0)
-                    .setAppliedMost(0)
-                    .build());
+            stateManager.initialiseState();
         }
         PersistentState persistentState = stateManager.read();
         currentTerm = persistentState.getTerm();
@@ -70,27 +76,50 @@ public final class RaftReplicator implements CommitReplicator {
         applied = stateManager.getHighestAppliedIndex();
     }
 
-    public static Builder newBuilder() {
-        return new Builder();
-    }
-
+    /**
+     * Return the current election term.
+     *
+     * @return election term for the current election.
+     */
     long getCurrentTerm() {
         return currentTerm;
     }
 
+    /**
+     * Check if the raft instance has already voted in the current term.
+     *
+     * @return election term.
+     */
     boolean hasVotedInTerm() {
         return null != votedFor;
     }
 
+    /**
+     * Return the highest commit index which is persisted for this instance.
+     *
+     * @return highest committed index.
+     */
     CommitIndex getCommittedIndex() {
         return committed;
     }
 
+    /**
+     * Return the highest applied index which has been handled by the
+     * underlying commit handler.
+     *
+     * @return highest applied commit to the underlying handler.
+     */
     CommitIndex getAppliedIndex() {
         return applied;
     }
 
+    public static Builder newBuilder() {
+        return new Builder();
+    }
 
+    /**
+     * Raft instance builder which handles the construction of Raft instances.
+     */
     public static final class Builder {
 
         private Builder() {}
