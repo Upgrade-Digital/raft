@@ -25,6 +25,7 @@ public final class RaftReplicator implements CommitReplicator {
     private StateManager stateManager;
     private CommitHandler commitHandler;
     private ClockSource clock;
+    private InstanceState state;
 
     private long currentTerm = -1;
     private Peer votedFor;
@@ -60,6 +61,7 @@ public final class RaftReplicator implements CommitReplicator {
     void startup() {
         try {
             restoreState();
+            state = InstanceState.FOLLOWER;
         } catch (IOException e) {
             LOG.error("Error restoring persistent state");
         }
@@ -115,6 +117,10 @@ public final class RaftReplicator implements CommitReplicator {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    public InstanceState getState() {
+        return state;
     }
 
     /**

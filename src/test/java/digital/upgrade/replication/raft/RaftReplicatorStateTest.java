@@ -69,6 +69,12 @@ public class RaftReplicatorStateTest {
         assertEquals(replicator.getAppliedIndex(), new CommitIndex(0L));
     }
 
+    @Test
+    public void testInitiallyFollower() {
+        RaftReplicator replicator = startedReplicator();
+        assertEquals(replicator.getState(), InstanceState.FOLLOWER);
+    }
+
     private RaftReplicator startedReplicator() {
         ClockSource clock = new CallCountingClock();
         InMemoryStateManager stateManager = new InMemoryStateManager(clock);
