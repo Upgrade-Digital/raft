@@ -19,7 +19,7 @@ public class RaftReplicatorStateTest {
     @Test
     public void currentTermInitialisedZeroOnFirstBoot() {
         RaftReplicator replicator = startedReplicator();
-        assertEquals(replicator.getCurrentTerm(), 0L);
+        assertEquals(replicator.getCurrentTerm(), new ElectionTerm(0));
     }
 
     @Test

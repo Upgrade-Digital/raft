@@ -27,7 +27,7 @@ public final class RaftReplicator implements CommitReplicator {
     private ClockSource clock;
     private InstanceState state;
 
-    private long currentTerm = -1;
+    private ElectionTerm currentTerm = new ElectionTerm();
     private Peer votedFor;
     private CommitIndex committed;
     private CommitIndex applied;
@@ -72,7 +72,7 @@ public final class RaftReplicator implements CommitReplicator {
             stateManager.initialiseState();
         }
         PersistentState persistentState = stateManager.read();
-        currentTerm = persistentState.getTerm();
+        currentTerm = new ElectionTerm(persistentState.getTerm());
         votedFor = persistentState.hasVotedFor()? persistentState.getVotedFor() : null;
         committed = stateManager.getHighestCommittedIndex();
         applied = stateManager.getHighestAppliedIndex();
@@ -83,7 +83,7 @@ public final class RaftReplicator implements CommitReplicator {
      *
      * @return election term for the current election.
      */
-    long getCurrentTerm() {
+    ElectionTerm getCurrentTerm() {
         return currentTerm;
     }
 
