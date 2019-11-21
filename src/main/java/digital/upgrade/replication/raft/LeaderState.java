@@ -7,13 +7,19 @@ import java.util.Map;
 import static digital.upgrade.replication.raft.Raft.Peer;
 
 /**
- * Volatile state for the leader.
+ * Volatile state for the leader post election.
  */
 class LeaderState {
 
     private Map<Peer, CommitIndex> nextIndex;
     private Map<Peer, CommitIndex> matchIndex;
 
+    /**
+     * Construct leader state given a collection of peers and the leaders last committed log index.
+     *
+     * @param peers Collection of peers which the leader will replicate state to.
+     * @param leaderLastLogIndex the index of the last committed index on the leader.
+     */
     LeaderState(Collection<Peer> peers, CommitIndex leaderLastLogIndex) {
         nextIndex = new HashMap<>(peers.size());
         matchIndex = new HashMap<>(peers.size());
