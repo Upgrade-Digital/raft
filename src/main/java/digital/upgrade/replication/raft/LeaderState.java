@@ -9,7 +9,7 @@ import static digital.upgrade.replication.raft.Raft.Peer;
 /**
  * Volatile state for the leader post election.
  */
-class LeaderState {
+final class LeaderState {
 
     private Map<Peer, CommitIndex> nextIndex;
     private Map<Peer, CommitIndex> matchIndex;
