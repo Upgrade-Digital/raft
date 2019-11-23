@@ -74,6 +74,15 @@ Contributions are welcome to the project. Please consider:
 * Locality weighting.
 * Rack awareness.
 
+## Architecture Concerns
+
+This library is intended to be used in a database / server scenario and makes use
+of threads for orchestration. As such it is not well suited to 'serverless'
+environments which impose significant restrictions on background threads.
+
+If you have a use case which would require a different architectural approach
+please file a feature requests providing details of the required use case.
+
 ## Historical Goals
 The original goal of this project was to provide a reliable distributed election
 implementation to allow for fine grained election based resource management
