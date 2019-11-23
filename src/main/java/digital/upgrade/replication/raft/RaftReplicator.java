@@ -27,7 +27,9 @@ public final class RaftReplicator implements CommitReplicator {
     private ClockSource clock;
     private InstanceState state;
 
-    private ElectionTerm currentTerm = new ElectionTerm();
+    private Raft.Term currentTerm = Raft.Term.newBuilder()
+            .setNumber(-1)
+            .build();
     private Peer votedFor;
     private CommitIndex committed;
     private CommitIndex applied;
@@ -72,7 +74,7 @@ public final class RaftReplicator implements CommitReplicator {
             stateManager.initialiseState();
         }
         PersistentState persistentState = stateManager.read();
-        currentTerm = new ElectionTerm(persistentState.getTerm());
+        currentTerm = persistentState.getTerm();
         votedFor = persistentState.hasVotedFor()? persistentState.getVotedFor() : null;
         committed = stateManager.getHighestCommittedIndex();
         applied = stateManager.getHighestAppliedIndex();
@@ -83,7 +85,7 @@ public final class RaftReplicator implements CommitReplicator {
      *
      * @return election term for the current election.
      */
-    ElectionTerm getCurrentTerm() {
+    Raft.Term getCurrentTerm() {
         return currentTerm;
     }
 
@@ -115,12 +117,21 @@ public final class RaftReplicator implements CommitReplicator {
         return applied;
     }
 
-    public static Builder newBuilder() {
+    static Builder newBuilder() {
         return new Builder();
     }
 
     public InstanceState getState() {
         return state;
+    }
+
+    Raft.AppendResult append(Raft.AppendRequest request) {
+        return Raft.AppendResult.newBuilder()
+                .setSuccess(false)
+                .setTerm(Raft.Term.newBuilder()
+                        .setNumber(-1)
+                        .build())
+                .build();
     }
 
     /**
@@ -132,17 +143,17 @@ public final class RaftReplicator implements CommitReplicator {
 
         private RaftReplicator result = new RaftReplicator();
 
-        public Builder setStateManager(StateManager stateManager) {
+        Builder setStateManager(StateManager stateManager) {
             result.stateManager = stateManager;
             return this;
         }
 
-        public Builder setCommitHandler(CommitHandler commitHandler) {
+        Builder setCommitHandler(CommitHandler commitHandler) {
             result.commitHandler = commitHandler;
             return this;
         }
 
-        public Builder setClockSource(ClockSource clock) {
+        Builder setClockSource(ClockSource clock) {
             result.clock = clock;
             return this;
         }

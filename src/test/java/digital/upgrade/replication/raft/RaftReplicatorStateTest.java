@@ -19,7 +19,10 @@ public class RaftReplicatorStateTest {
     @Test
     public void currentTermInitialisedZeroOnFirstBoot() {
         RaftReplicator replicator = startedReplicator();
-        assertEquals(replicator.getCurrentTerm(), new ElectionTerm(0));
+        assertEquals(replicator.getCurrentTerm(),
+            Raft.Term.newBuilder()
+            .setNumber(0)
+            .build());
     }
 
     @Test
@@ -75,7 +78,7 @@ public class RaftReplicatorStateTest {
         assertEquals(replicator.getState(), InstanceState.FOLLOWER);
     }
 
-    private RaftReplicator startedReplicator() {
+    static RaftReplicator startedReplicator() {
         ClockSource clock = new CallCountingClock();
         InMemoryStateManager stateManager = new InMemoryStateManager(clock);
         InMemoryCommitHandler commitHandler = new InMemoryCommitHandler(clock);

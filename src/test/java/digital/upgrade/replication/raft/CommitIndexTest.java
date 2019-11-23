@@ -47,12 +47,12 @@ public class CommitIndexTest {
 
     @Test
     public void testNotEqualsNonCommit() {
-        assertNotEquals(new Object(), new CommitIndex(0L));
+        assertNotEquals(new Object(), new CommitIndex(CommitIndex.ZERO));
     }
 
     @Test
     public void testHashCodeValue() {
-        assertEquals(new CommitIndex(0L).hashCode(), Objects.hash(0L, 0L));
+        assertEquals(new CommitIndex(CommitIndex.ZERO).hashCode(), Objects.hash(0L, 0L));
     }
 
     @Test

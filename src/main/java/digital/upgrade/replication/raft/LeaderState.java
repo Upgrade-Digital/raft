@@ -11,6 +11,10 @@ import static digital.upgrade.replication.raft.Raft.Peer;
  */
 final class LeaderState {
 
+    private static final Raft.Index ZERO = Raft.Index.newBuilder()
+            .setMostSignificant(0)
+            .setLeastSignificant(0)
+            .build();
     private Map<Peer, CommitIndex> nextIndex;
     private Map<Peer, CommitIndex> matchIndex;
 
@@ -24,7 +28,7 @@ final class LeaderState {
         nextIndex = new HashMap<>(peers.size());
         matchIndex = new HashMap<>(peers.size());
         CommitIndex nextCommit = leaderLastLogIndex.nextIndex();
-        CommitIndex initialIndex = new CommitIndex(0L);
+        CommitIndex initialIndex = new CommitIndex(ZERO);
         for (Peer peer : peers) {
             nextIndex.put(peer, nextCommit);
             matchIndex.put(peer, initialIndex);

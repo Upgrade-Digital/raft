@@ -20,12 +20,18 @@ public final class InMemoryStateManager implements StateManager {
     @Override
     public void initialiseState() {
         write(PersistentState.newBuilder()
-                .setTerm(INITIAL_TERM_VALUE)
+                .setTerm(Raft.Term.newBuilder()
+                        .setNumber(INITIAL_TERM_VALUE)
+                        .build())
                 .setUuid(UUID.randomUUID().toString())
-                .setCommittedLeast(0)
-                .setCommittedMost(0)
-                .setAppliedLeast(0)
-                .setAppliedMost(0)
+                .setCommitted(Raft.Index.newBuilder()
+                        .setMostSignificant(0)
+                        .setLeastSignificant(0)
+                        .build())
+                .setApplied(Raft.Index.newBuilder()
+                        .setMostSignificant(0)
+                        .setLeastSignificant(0)
+                        .build())
                 .build());
     }
 
@@ -50,12 +56,12 @@ public final class InMemoryStateManager implements StateManager {
 
     @Override
     public CommitIndex getHighestCommittedIndex() {
-        return new CommitIndex(state.getCommittedMost(), state.getCommittedLeast());
+        return new CommitIndex(state.getCommitted());
     }
 
     @Override
     public CommitIndex getHighestAppliedIndex() {
-        return new CommitIndex(state.getAppliedMost(), state.getAppliedLeast());
+        return new CommitIndex(state.getApplied());
     }
 
     long getLastWriteTime() {

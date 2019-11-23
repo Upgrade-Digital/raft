@@ -9,6 +9,11 @@ import java.util.UUID;
  */
 public class CommitIndex {
 
+    static final Raft.Index ZERO = Raft.Index.newBuilder()
+            .setMostSignificant(0)
+            .setLeastSignificant(0)
+            .build();
+
     private final long mostSignificant;
     private final long leastSignificant;
 
@@ -17,17 +22,21 @@ public class CommitIndex {
      * @param mostSignificant value for upper 64 bits.
      * @param leastSignificant value for lower 64 bits.
      */
-    public CommitIndex(long mostSignificant, long leastSignificant) {
+    CommitIndex(long mostSignificant, long leastSignificant) {
         this.mostSignificant = mostSignificant;
         this.leastSignificant = leastSignificant;
     }
 
     /**
      * Convenience constructor for least significant long value.
-     * @param leastSignificant value for lower 64 bits.
+     * @param index value for lower 64 bits.
      */
-    public CommitIndex(long leastSignificant) {
-        this(0L, leastSignificant);
+    CommitIndex(Raft.Index index) {
+        this(index.getMostSignificant(), index.getLeastSignificant());
+    }
+
+    CommitIndex(long number) {
+        this(0, number);
     }
 
     /**
@@ -44,7 +53,7 @@ public class CommitIndex {
      * @return next index from the current value.
      * @throws ArithmeticException when the counter overflows
      */
-    public CommitIndex nextIndex() {
+    CommitIndex nextIndex() {
         long least = leastSignificant;
         long most = mostSignificant;
         if (least == Long.MAX_VALUE) {
