@@ -126,11 +126,15 @@ public final class RaftReplicator implements CommitReplicator {
     }
 
     Raft.AppendResult append(Raft.AppendRequest request) {
+        if (request.getLeaderTerm().getNumber() < getCurrentTerm().getNumber()) {
+            return Raft.AppendResult.newBuilder()
+                    .setSuccess(false)
+                    .setTerm(getCurrentTerm())
+                    .build();
+        }
         return Raft.AppendResult.newBuilder()
-                .setSuccess(false)
-                .setTerm(Raft.Term.newBuilder()
-                        .setNumber(-1)
-                        .build())
+                .setSuccess(true)
+                .setTerm(getCurrentTerm())
                 .build();
     }
 

@@ -7,7 +7,7 @@ import org.testng.annotations.Test;
 
 import java.util.UUID;
 
-import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.*;
 
 public final class RaftReplicatorTest {
 
@@ -25,7 +25,34 @@ public final class RaftReplicatorTest {
     @Test
     public void testAppendReturnsResult() {
         RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
-        Raft.AppendResult result = replicator.append(Raft.AppendRequest.newBuilder()
+        Raft.AppendResult result = replicator.append(zeroRequest().build());
+        assertNotNull(result);
+    }
+
+    @Test
+    public void testReturnsFalseIfTermLessCurrentTerm() {
+        RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
+        Raft.Term current = replicator.getCurrentTerm();
+        Raft.AppendResult result = replicator.append(zeroRequest()
+                .setLeaderTerm(replicator.getCurrentTerm()
+                        .toBuilder()
+                        .setNumber(current.getNumber() - 1))
+                .build());
+        assertFalse(result.getSuccess());
+    }
+
+    @Test
+    public void testReturnTrueIfTermEqualCurrentTerm() {
+        RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
+        Raft.AppendResult result = replicator.append(zeroRequest()
+                .setLeaderTerm(replicator.getCurrentTerm())
+                .build());
+        assertTrue(result.getSuccess());
+    }
+
+
+    private Raft.AppendRequest.Builder zeroRequest() {
+        return Raft.AppendRequest.newBuilder()
                 .setLeaderTerm(Raft.Term.newBuilder()
                         .setNumber(0)
                         .build())
@@ -36,8 +63,6 @@ public final class RaftReplicatorTest {
                 .setPreviousTerm(Raft.Term.newBuilder()
                         .setNumber(0)
                         .build())
-                .setLeaderIndex(CommitIndex.ZERO)
-                .build());
-        assertNotNull(result);
+                .setLeaderIndex(CommitIndex.ZERO);
     }
 }
