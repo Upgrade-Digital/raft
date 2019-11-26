@@ -1,7 +1,11 @@
 package digital.upgrade.replication.raft;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+
+import digital.upgrade.replication.raft.Raft.Entry;
 
 import static digital.upgrade.replication.raft.Raft.PersistentState;
 
@@ -12,6 +16,7 @@ public final class InMemoryStateManager implements StateManager {
     private final ClockSource clock;
     private PersistentState state;
     private long lastWriteTime = -1;
+    private Map<Raft.Index, Entry> commits = new HashMap<>();
 
     InMemoryStateManager(ClockSource clock) {
         this.clock = clock;
@@ -62,6 +67,29 @@ public final class InMemoryStateManager implements StateManager {
     @Override
     public CommitIndex getHighestAppliedIndex() {
         return new CommitIndex(state.getApplied());
+    }
+
+    @Override
+    public void writeCommit(Entry entry) {
+        commits.put(entry.getCommit(), entry);
+    }
+
+    @Override
+    public Entry readCommit(Raft.Index index) {
+        if (!commits.containsKey(index)) {
+            throw new IndexOutOfBoundsException("Unable to locate commit entry for index: " + index);
+        }
+        return commits.get(index);
+    }
+
+    @Override
+    public boolean hasCommit(Raft.Index index) {
+        return commits.containsKey(index);
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return commits.isEmpty();
     }
 
     long getLastWriteTime() {

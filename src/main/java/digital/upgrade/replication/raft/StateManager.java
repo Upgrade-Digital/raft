@@ -2,6 +2,8 @@ package digital.upgrade.replication.raft;
 
 import java.io.IOException;
 
+import static digital.upgrade.replication.raft.Raft.Entry;
+import static digital.upgrade.replication.raft.Raft.Index;
 import static digital.upgrade.replication.raft.Raft.PersistentState;
 
 /**
@@ -57,4 +59,35 @@ public interface StateManager {
      * @return highest applied commit index.
      */
     CommitIndex getHighestAppliedIndex();
+
+    /**
+     * Write a commit to the persistent storage.
+     *
+     * @param entry to commit
+     */
+    void writeCommit(Entry entry);
+
+    /**
+     * Return the commit entry for a given index.
+     *
+     * @param index to return
+     * @return the commit for the requested index
+     * @throws IndexOutOfBoundsException if the index is not found.
+     */
+    Entry readCommit(Index index);
+
+    /**
+     * Test if the persistent state includes a commit with the given index.
+     *
+     * @param index of the commit entry
+     * @return true if the index exists
+     */
+    boolean hasCommit(Index index);
+
+    /**
+     * Return true if the commit log messages is empty (on initialisation).
+     *
+     * @return when no log commit history
+     */
+    boolean isEmpty();
 }

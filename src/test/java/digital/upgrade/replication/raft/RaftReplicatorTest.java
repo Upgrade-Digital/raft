@@ -2,6 +2,8 @@ package digital.upgrade.replication.raft;
 
 import digital.upgrade.replication.CommitReplicator;
 import digital.upgrade.replication.Model.CommitMessage;
+import digital.upgrade.replication.raft.Raft.AppendResult;
+import digital.upgrade.replication.raft.Raft.Term;
 
 import org.testng.annotations.Test;
 
@@ -25,15 +27,15 @@ public final class RaftReplicatorTest {
     @Test
     public void testAppendReturnsResult() {
         RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
-        Raft.AppendResult result = replicator.append(zeroRequest().build());
+        AppendResult result = replicator.append(zeroRequest().build());
         assertNotNull(result);
     }
 
     @Test
     public void testReturnsFalseIfTermLessCurrentTerm() {
         RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
-        Raft.Term current = replicator.getCurrentTerm();
-        Raft.AppendResult result = replicator.append(zeroRequest()
+        Term current = replicator.getCurrentTerm();
+        AppendResult result = replicator.append(zeroRequest()
                 .setLeaderTerm(replicator.getCurrentTerm()
                         .toBuilder()
                         .setNumber(current.getNumber() - 1))
@@ -44,23 +46,39 @@ public final class RaftReplicatorTest {
     @Test
     public void testReturnTrueIfTermEqualCurrentTerm() {
         RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
-        Raft.AppendResult result = replicator.append(zeroRequest()
+        AppendResult result = replicator.append(zeroRequest()
                 .setLeaderTerm(replicator.getCurrentTerm())
                 .build());
         assertTrue(result.getSuccess());
     }
 
+    @Test
+    public void testReturnFalseIfPreviousLogTermMismatch() {
+        RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
+        AppendResult result = replicator.append(zeroRequest()
+                .setLeaderTerm(replicator.getCurrentTerm())
+                .build());
+        assertTrue(result.getSuccess());
+        result = replicator.append(zeroRequest()
+                .setLeaderTerm(replicator.getCurrentTerm()
+                        .toBuilder()
+                        .setNumber(999)
+                        .build())
+                .build());
+        assertFalse(result.getSuccess());
+    }
+
 
     private Raft.AppendRequest.Builder zeroRequest() {
         return Raft.AppendRequest.newBuilder()
-                .setLeaderTerm(Raft.Term.newBuilder()
+                .setLeaderTerm(Term.newBuilder()
                         .setNumber(0)
                         .build())
                 .setLeader(Raft.Peer.newBuilder()
                         .setUuid(UUID.randomUUID().toString())
                         .build())
                 .setPreviousIndex(CommitIndex.ZERO)
-                .setPreviousTerm(Raft.Term.newBuilder()
+                .setPreviousTerm(Term.newBuilder()
                         .setNumber(0)
                         .build())
                 .setLeaderIndex(CommitIndex.ZERO);

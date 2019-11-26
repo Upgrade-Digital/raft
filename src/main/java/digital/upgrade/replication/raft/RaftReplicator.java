@@ -3,6 +3,9 @@ package digital.upgrade.replication.raft;
 import digital.upgrade.replication.CommitHandler;
 import digital.upgrade.replication.CommitReplicator;
 import digital.upgrade.replication.CommitState;
+import digital.upgrade.replication.raft.Raft.AppendRequest;
+import digital.upgrade.replication.raft.Raft.Entry;
+import digital.upgrade.replication.raft.Raft.Index;
 
 
 import org.slf4j.Logger;
@@ -125,15 +128,33 @@ public final class RaftReplicator implements CommitReplicator {
         return state;
     }
 
-    Raft.AppendResult append(Raft.AppendRequest request) {
+    Raft.AppendResult append(AppendRequest request) {
         if (request.getLeaderTerm().getNumber() < getCurrentTerm().getNumber()) {
-            return Raft.AppendResult.newBuilder()
-                    .setSuccess(false)
-                    .setTerm(getCurrentTerm())
-                    .build();
+            return failureResponse();
         }
+        if (!stateManager.isEmpty() && lastIndexTermMismatch(request)) {
+            return failureResponse();
+        }
+        request.getEntriesList()
+                .forEach(entry -> stateManager.writeCommit(entry));
         return Raft.AppendResult.newBuilder()
                 .setSuccess(true)
+                .setTerm(getCurrentTerm())
+                .build();
+    }
+
+    private boolean lastIndexTermMismatch(AppendRequest request) {
+        Index lastIndex = request.getPreviousIndex();
+        if (!stateManager.hasCommit(lastIndex)) {
+            return true;
+        }
+        Entry commit =  stateManager.readCommit(lastIndex);
+        return !commit.getTerm().equals(request.getPreviousTerm());
+    }
+
+    private Raft.AppendResult failureResponse() {
+        return Raft.AppendResult.newBuilder()
+                .setSuccess(false)
                 .setTerm(getCurrentTerm())
                 .build();
     }
