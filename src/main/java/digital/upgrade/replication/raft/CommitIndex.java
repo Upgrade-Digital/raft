@@ -3,13 +3,15 @@ package digital.upgrade.replication.raft;
 import java.util.Objects;
 import java.util.UUID;
 
+import digital.upgrade.replication.raft.Raft.Index;
+
 /**
  * Tiny type representation of a commit index which is represented as two long values in line with the inputs of
  * a UUID (128 bit) class.
  */
 public class CommitIndex {
 
-    static final Raft.Index ZERO = Raft.Index.newBuilder()
+    static final Index ZERO = Index.newBuilder()
             .setMostSignificant(0)
             .setLeastSignificant(0)
             .build();
@@ -31,7 +33,7 @@ public class CommitIndex {
      * Convenience constructor for least significant long value.
      * @param index value for lower 64 bits.
      */
-    CommitIndex(Raft.Index index) {
+    CommitIndex(Index index) {
         this(index.getMostSignificant(), index.getLeastSignificant());
     }
 
@@ -90,5 +92,12 @@ public class CommitIndex {
 
     long getMostSignificantLong() {
         return mostSignificant;
+    }
+
+    public Index indexValue() {
+        return Index.newBuilder()
+                .setMostSignificant(mostSignificant)
+                .setLeastSignificant(leastSignificant)
+                .build();
     }
 }

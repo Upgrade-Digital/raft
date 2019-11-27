@@ -3,6 +3,7 @@ package digital.upgrade.replication.raft;
 import digital.upgrade.replication.CommitReplicator;
 import digital.upgrade.replication.Model.CommitMessage;
 import digital.upgrade.replication.raft.Raft.AppendResult;
+import digital.upgrade.replication.raft.Raft.Entry;
 import digital.upgrade.replication.raft.Raft.Term;
 
 import org.testng.annotations.Test;
@@ -55,17 +56,33 @@ public final class RaftReplicatorTest {
     @Test
     public void testReturnFalseIfPreviousLogTermMismatch() {
         RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
+        CommitIndex index = zeroIndex();
         AppendResult result = replicator.append(zeroRequest()
+                .addEntries(newEntry(replicator, index))
                 .setLeaderTerm(replicator.getCurrentTerm())
                 .build());
+        index = index.nextIndex();
         assertTrue(result.getSuccess());
         result = replicator.append(zeroRequest()
+                .addEntries(newEntry(replicator, index))
                 .setLeaderTerm(replicator.getCurrentTerm()
                         .toBuilder()
                         .setNumber(999)
                         .build())
                 .build());
         assertFalse(result.getSuccess());
+    }
+
+    private Entry newEntry(RaftReplicator replicator, CommitIndex index) {
+        return Entry.newBuilder()
+                .setCommit(index.indexValue())
+                .setTerm(replicator.getCurrentTerm())
+                .setCommand(com.google.protobuf.ByteString.EMPTY)
+                .build();
+    }
+
+    private CommitIndex zeroIndex() {
+        return new CommitIndex(0);
     }
 
 
