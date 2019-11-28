@@ -2,17 +2,40 @@ package digital.upgrade.replication.raft;
 
 import digital.upgrade.replication.CommitReplicator;
 import digital.upgrade.replication.Model.CommitMessage;
+import digital.upgrade.replication.raft.Raft.AppendRequest;
 import digital.upgrade.replication.raft.Raft.AppendResult;
 import digital.upgrade.replication.raft.Raft.Entry;
+import digital.upgrade.replication.raft.Raft.Index;
+import digital.upgrade.replication.raft.Raft.Peer;
 import digital.upgrade.replication.raft.Raft.Term;
 
+import com.google.protobuf.ByteString;
 import org.testng.annotations.Test;
 
+import java.util.Arrays;
 import java.util.UUID;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
+import static org.testng.AssertJUnit.assertFalse;
 
 public final class RaftReplicatorTest {
+
+    private static final Term TERM_777 = Term.newBuilder()
+            .setNumber(777)
+            .build();
+    private static final Entry THIRD_ENTRY = Entry.newBuilder()
+            .setCommit(Index.newBuilder()
+                    .setMostSignificant(0)
+                    .setLeastSignificant(2)
+                    .build())
+            .setTerm(TERM_777)
+            .setCommand(ByteString.EMPTY)
+            .build();
+    private static final Entry[] SINGLE_TERM_ENTRIES = new Entry[]{
+            THIRD_ENTRY
+    };
 
     @Test
     public void testCommitReturnsCommitState() {
@@ -75,6 +98,24 @@ public final class RaftReplicatorTest {
         assertFalse(result.getSuccess());
     }
 
+    @Test
+    public void testOnConflictingTermDeleteEntryAndAllFollowing() {
+        RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
+        replicator.append(zeroRequest()
+                .addAllEntries(Arrays.asList(SINGLE_TERM_ENTRIES))
+                .build());
+        replicator.append(zeroRequest()
+                .setPreviousTerm(replicator.getCurrentTerm())
+                .setPreviousIndex(Index.newBuilder()
+                        .setMostSignificant(0)
+                        .setLeastSignificant(2)
+                        .build())
+                .setLeaderTerm(replicator.getCurrentTerm())
+                .addEntries(THIRD_ENTRY)
+                .build());
+        assertEquals(replicator.getCommittedIndex().indexValue(), THIRD_ENTRY.getCommit());
+    }
+
     private Entry newEntry(RaftReplicator replicator, CommitIndex index) {
         return Entry.newBuilder()
                 .setCommit(index.indexValue())
@@ -88,12 +129,12 @@ public final class RaftReplicatorTest {
     }
 
 
-    private Raft.AppendRequest.Builder zeroRequest() {
-        return Raft.AppendRequest.newBuilder()
+    private AppendRequest.Builder zeroRequest() {
+        return AppendRequest.newBuilder()
                 .setLeaderTerm(Term.newBuilder()
                         .setNumber(0)
                         .build())
-                .setLeader(Raft.Peer.newBuilder()
+                .setLeader(Peer.newBuilder()
                         .setUuid(UUID.randomUUID().toString())
                         .build())
                 .setPreviousIndex(CommitIndex.ZERO)
