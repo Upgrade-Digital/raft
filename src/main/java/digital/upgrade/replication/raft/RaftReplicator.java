@@ -152,7 +152,7 @@ public final class RaftReplicator implements CommitReplicator {
         if (!stateManager.hasCommit(lastIndex)) {
             return true;
         }
-        Entry commit =  stateManager.readCommit(lastIndex);
+        Entry commit = stateManager.readCommit(lastIndex);
         return !commit.getTerm().equals(request.getPreviousTerm());
     }
 

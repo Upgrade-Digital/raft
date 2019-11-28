@@ -56,19 +56,21 @@ public final class RaftReplicatorTest {
     @Test
     public void testReturnFalseIfPreviousLogTermMismatch() {
         RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
-        CommitIndex index = zeroIndex();
+        CommitIndex previousIndex = zeroIndex();
         AppendResult result = replicator.append(zeroRequest()
-                .addEntries(newEntry(replicator, index))
+                .addEntries(newEntry(replicator, previousIndex))
                 .setLeaderTerm(replicator.getCurrentTerm())
                 .build());
-        index = index.nextIndex();
+        CommitIndex nextIndex = previousIndex.nextIndex();
         assertTrue(result.getSuccess());
+        Term wrongTerm = Term.newBuilder()
+                .setNumber(999)
+                .build();
         result = replicator.append(zeroRequest()
-                .addEntries(newEntry(replicator, index))
-                .setLeaderTerm(replicator.getCurrentTerm()
-                        .toBuilder()
-                        .setNumber(999)
-                        .build())
+                .addEntries(newEntry(replicator, nextIndex))
+                .setLeaderTerm(replicator.getCurrentTerm())
+                .setPreviousIndex(previousIndex.indexValue())
+                .setPreviousTerm(wrongTerm)
                 .build());
         assertFalse(result.getSuccess());
     }
