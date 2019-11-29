@@ -121,10 +121,20 @@ public final class RaftReplicator implements CommitReplicator {
         return applied;
     }
 
+    /**
+     * Create a new builder for the Raft replicator.
+     *
+     * @return builder for type.
+     */
     static Builder newBuilder() {
         return new Builder();
     }
 
+    /**
+     * Return the current instance state.
+     *
+     * @return state of the instance as a leader, follower or election candidate.
+     */
     public InstanceState getState() {
         return state;
     }
