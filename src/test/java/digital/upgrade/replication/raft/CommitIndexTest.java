@@ -69,4 +69,18 @@ public class CommitIndexTest {
     public void testEquals() {
         assertEquals(new CommitIndex(777L), new CommitIndex(777L));
     }
+
+    @Test
+    public void testPieviousIndex() {
+        CommitIndex index = new CommitIndex(1, 0);
+        CommitIndex previous = index.previousValue();
+        assertEquals(previous.getMostSignificantLong(), 0L);
+        assertEquals(previous.getLeastSignificant(), Long.MAX_VALUE);
+    }
+
+    @Test(expectedExceptions = ArithmeticException.class)
+    public void testPreviousUnderflow() {
+        CommitIndex index = new CommitIndex(0, 0);
+        index.previousValue();
+    }
 }

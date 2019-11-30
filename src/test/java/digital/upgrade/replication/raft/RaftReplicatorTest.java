@@ -22,20 +22,31 @@ import static org.testng.AssertJUnit.assertFalse;
 
 public final class RaftReplicatorTest {
 
+    private static final Term FIRST_TERM = Term.newBuilder()
+            .setNumber(0)
+            .build();
     private static final Term TERM_777 = Term.newBuilder()
             .setNumber(777)
             .build();
-    private static final Entry THIRD_ENTRY = Entry.newBuilder()
-            .setCommit(Index.newBuilder()
-                    .setMostSignificant(0)
-                    .setLeastSignificant(2)
-                    .build())
-            .setTerm(TERM_777)
-            .setCommand(ByteString.EMPTY)
-            .build();
-    private static final Entry[] SINGLE_TERM_ENTRIES = new Entry[]{
-            THIRD_ENTRY
-    };
+    private static final Entry THIRD_ENTRY = entry(2, TERM_777);
+    private static final Entry[] SINGLE_TERM_ENTRIES;
+    static {
+        SINGLE_TERM_ENTRIES = new Entry[10];
+        for (int i = 0; i < SINGLE_TERM_ENTRIES.length; i++) {
+            SINGLE_TERM_ENTRIES[i] = entry(i, FIRST_TERM);
+        }
+    }
+
+    private static Entry entry(int index, Term term) {
+        return Entry.newBuilder()
+                .setCommit(Index.newBuilder()
+                        .setMostSignificant(0)
+                        .setLeastSignificant(index)
+                        .build())
+                .setTerm(term)
+                .setCommand(ByteString.EMPTY)
+                .build();
+    }
 
     @Test
     public void testCommitReturnsCommitState() {

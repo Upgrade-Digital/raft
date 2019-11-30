@@ -70,6 +70,27 @@ public class CommitIndex {
         return new CommitIndex(most, least);
     }
 
+    /**
+     * Calculate the previous index from the current value.
+     *
+     * @return previous value
+     */
+    CommitIndex previousValue() {
+        long least = leastSignificant;
+        long most  = mostSignificant;
+        if (0 == least) {
+            least = Long.MAX_VALUE;
+            most--;
+        } else {
+            least--;
+        }
+        if (0 > most) {
+            throw new ArithmeticException("Commit index underflow");
+        }
+        return new CommitIndex(most, least);
+    }
+
+
     @Override
     public boolean equals(Object right) {
         if (!(right instanceof CommitIndex)) {
@@ -94,10 +115,14 @@ public class CommitIndex {
         return mostSignificant;
     }
 
-    public Index indexValue() {
+    Index indexValue() {
         return Index.newBuilder()
                 .setMostSignificant(mostSignificant)
                 .setLeastSignificant(leastSignificant)
                 .build();
+    }
+
+    long getLeastSignificant() {
+        return leastSignificant;
     }
 }

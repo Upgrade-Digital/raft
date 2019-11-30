@@ -90,4 +90,11 @@ public interface StateManager {
      * @return when no log commit history
      */
     boolean isEmpty();
+
+    /**
+     * Remove a commit for the given index from the store.
+     *
+     * @param index to remove.
+     */
+    void removeCommit(Index index);
 }

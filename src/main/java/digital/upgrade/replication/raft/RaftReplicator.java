@@ -148,6 +148,13 @@ public final class RaftReplicator implements CommitReplicator {
             LOG.debug("Append failure: state not empty and last index term mismatched");
             return failureResponse();
         }
+        for (Entry commit : request.getEntriesList()) {
+            if (indexMismatch(commit)) {
+                removeFrom(commit.getCommit());
+            }
+            stateManager.writeCommit(commit);
+            committed = new CommitIndex(commit.getCommit());
+        }
         request.getEntriesList()
                 .forEach(entry -> stateManager.writeCommit(entry));
         LOG.debug("Append success: committed {} log entries", request.getEntriesCount());
@@ -155,6 +162,24 @@ public final class RaftReplicator implements CommitReplicator {
                 .setSuccess(true)
                 .setTerm(getCurrentTerm())
                 .build();
+    }
+
+    private void removeFrom(Index start) {
+        CommitIndex remove = new CommitIndex(start);
+        committed = remove.previousValue();
+        while (stateManager.hasCommit(remove.indexValue())) {
+            stateManager.removeCommit(remove.indexValue());
+            remove = remove.nextIndex();
+        }
+
+    }
+
+    private boolean indexMismatch(Entry commit) {
+        if (!stateManager.hasCommit(commit.getCommit())) {
+            return false;
+        }
+        Entry prior = stateManager.readCommit(commit.getCommit());
+        return !prior.getTerm().equals(commit.getTerm());
     }
 
     private boolean lastIndexTermMismatch(AppendRequest request) {

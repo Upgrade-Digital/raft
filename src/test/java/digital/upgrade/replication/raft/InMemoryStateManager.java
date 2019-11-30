@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import digital.upgrade.replication.raft.Raft.Entry;
+import digital.upgrade.replication.raft.Raft.Index;
 
 import static digital.upgrade.replication.raft.Raft.PersistentState;
 
@@ -90,6 +91,11 @@ public final class InMemoryStateManager implements StateManager {
     @Override
     public boolean isEmpty() {
         return commits.isEmpty();
+    }
+
+    @Override
+    public void removeCommit(Index index) {
+        commits.remove(index);
     }
 
     long getLastWriteTime() {
