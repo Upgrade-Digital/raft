@@ -155,8 +155,10 @@ public final class RaftReplicator implements CommitReplicator {
             stateManager.writeCommit(commit);
             committed = new CommitIndex(commit.getCommit());
         }
-        request.getEntriesList()
-                .forEach(entry -> stateManager.writeCommit(entry));
+        CommitIndex leaderIndex = new CommitIndex(request.getLeaderIndex());
+        if (leaderIndex.greaterThan(committed)) {
+            committed = leaderIndex;
+        }
         LOG.debug("Append success: committed {} log entries", request.getEntriesCount());
         return AppendResult.newBuilder()
                 .setSuccess(true)

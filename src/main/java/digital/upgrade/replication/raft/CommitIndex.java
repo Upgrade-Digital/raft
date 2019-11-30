@@ -125,4 +125,14 @@ public class CommitIndex {
     long getLeastSignificant() {
         return leastSignificant;
     }
+
+    boolean greaterThan(CommitIndex committed) {
+        if (mostSignificant > committed.mostSignificant) {
+            return true;
+        }
+        if (mostSignificant == committed.mostSignificant) {
+            return leastSignificant > committed.leastSignificant;
+        }
+        return false;
+    }
 }
