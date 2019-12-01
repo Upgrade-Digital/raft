@@ -7,6 +7,8 @@ import digital.upgrade.replication.raft.Raft.AppendRequest;
 import digital.upgrade.replication.raft.Raft.AppendResult;
 import digital.upgrade.replication.raft.Raft.Entry;
 import digital.upgrade.replication.raft.Raft.Index;
+import digital.upgrade.replication.raft.Raft.VoteRequest;
+import digital.upgrade.replication.raft.Raft.VoteResult;
 
 
 import org.slf4j.Logger;
@@ -144,7 +146,7 @@ public final class RaftReplicator implements CommitReplicator {
             LOG.debug("Append failure: request leader term < current term");
             return failureResponse();
         }
-        if (!stateManager.isEmpty() && lastIndexTermMismatch(request)) {
+        if (lastIndexTermMismatch(request)) {
             LOG.debug("Append failure: state not empty and last index term mismatched");
             return failureResponse();
         }
@@ -185,6 +187,9 @@ public final class RaftReplicator implements CommitReplicator {
     }
 
     private boolean lastIndexTermMismatch(AppendRequest request) {
+        if (stateManager.isEmpty()) {
+            return false;
+        }
         Index lastIndex = request.getPreviousIndex();
         if (!stateManager.hasCommit(lastIndex)) {
             return true;
@@ -198,6 +203,16 @@ public final class RaftReplicator implements CommitReplicator {
                 .setSuccess(false)
                 .setTerm(getCurrentTerm())
                 .build();
+    }
+
+    /**
+     * Handle a vote request and return vote if not already voted in this term and the index and term are up to date.
+     *
+     * @param voteRequest to consider for voting from a candidate
+     * @return VoteResult with vote granted true if vote granted.
+     */
+    VoteResult requestVote(VoteRequest voteRequest) {
+        return null;
     }
 
     /**

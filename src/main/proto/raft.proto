@@ -48,3 +48,15 @@ message AppendResult {
   required Term term = 1;
   required bool success = 2;
 }
+
+message VoteRequest {
+    required Term candidateTerm = 1;
+    required Peer candidate = 2;
+    required Index lastLogIndex = 3;
+    required Term lastLogTerm = 4;
+}
+
+message VoteResult {
+    required Term voterTerm = 1;
+    required bool voteGranted = 2;
+}

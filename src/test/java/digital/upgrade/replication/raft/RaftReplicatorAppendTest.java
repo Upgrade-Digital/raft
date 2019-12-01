@@ -20,7 +20,7 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.AssertJUnit.assertFalse;
 
-public final class RaftReplicatorTest {
+public final class RaftReplicatorAppendTest {
 
     private static final Term FIRST_TERM = Term.newBuilder()
             .setNumber(0)
