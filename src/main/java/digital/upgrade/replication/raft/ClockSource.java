@@ -6,10 +6,10 @@ package digital.upgrade.replication.raft;
  */
 public interface ClockSource {
 
-    /**
-     * Get the current time in milliseconds (from epoch)
-     *
-     * @return system clock time in milliseconds UTC.
-     */
-    long currentTime();
+  /**
+   * Get the current time in milliseconds (from epoch)
+   *
+   * @return system clock time in milliseconds UTC.
+   */
+  long currentTime();
 }

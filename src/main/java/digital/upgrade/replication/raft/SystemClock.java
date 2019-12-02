@@ -7,8 +7,8 @@ import java.time.Clock;
  */
 public final class SystemClock implements ClockSource {
 
-    @Override
-    public long currentTime() {
-        return Clock.systemUTC().millis();
-    }
+  @Override
+  public long currentTime() {
+    return Clock.systemUTC().millis();
+  }
 }

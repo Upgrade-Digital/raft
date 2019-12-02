@@ -2,10 +2,10 @@ package digital.upgrade.replication.raft;
 
 public class CallCountingClock implements ClockSource {
 
-    private long time = 0;
+  private long time = 0;
 
-    @Override
-    public long currentTime() {
-        return time++;
-    }
+  @Override
+  public long currentTime() {
+    return time++;
+  }
 }

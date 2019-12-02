@@ -8,11 +8,11 @@ import static digital.upgrade.replication.Model.CommitMessage;
  */
 public interface CommitHandler {
 
-    /**
-     * Write a commit message to underlying persistent storage.
-     *
-     * @param commit message to write.
-     * @return true if the write was successful.
-     */
-    boolean write(CommitMessage commit);
+  /**
+   * Write a commit message to underlying persistent storage.
+   *
+   * @param commit message to write.
+   * @return true if the write was successful.
+   */
+  boolean write(CommitMessage commit);
 }

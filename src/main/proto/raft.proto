@@ -36,12 +36,12 @@ message Entry {
 }
 
 message AppendRequest {
-    required Term leaderTerm = 1;
-    required Peer leader = 2;
-    required Index previousIndex= 3;
-    required Term previousTerm = 4;
-    repeated Entry entries = 5;
-    required Index leaderIndex = 6;
+  required Term leaderTerm = 1;
+  required Peer leader = 2;
+  required Index previousIndex= 3;
+  required Term previousTerm = 4;
+  repeated Entry entries = 5;
+  required Index leaderIndex = 6;
 }
 
 message AppendResult {
@@ -50,13 +50,13 @@ message AppendResult {
 }
 
 message VoteRequest {
-    required Term candidateTerm = 1;
-    required Peer candidate = 2;
-    required Index lastLogIndex = 3;
-    required Term lastLogTerm = 4;
+  required Term candidateTerm = 1;
+  required Peer candidate = 2;
+  required Index lastLogIndex = 3;
+  required Term lastLogTerm = 4;
 }
 
 message VoteResult {
-    required Term voterTerm = 1;
-    required bool voteGranted = 2;
+  required Term voterTerm = 1;
+  required bool voteGranted = 2;
 }

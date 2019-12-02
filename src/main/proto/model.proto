@@ -5,6 +5,6 @@ option java_package = "digital.upgrade.replication";
 option java_outer_classname = "Model";
 
 message CommitMessage {
-    optional string scope = 1;
-    optional bytes data = 2;
+  optional string scope = 1;
+  optional bytes data = 2;
 }

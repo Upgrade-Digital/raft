@@ -8,11 +8,11 @@ import static digital.upgrade.replication.Model.CommitMessage;
  */
 public interface CommitReplicator extends Runnable {
 
-    /**
-     * Commit a specific state machine update to the underlying commit handler via the replicator.
-     *
-     * @param message to commit to the underlying commit handler.
-     * @return state of the commit when done.
-     */
-    CommitState commit(CommitMessage message);
+  /**
+   * Commit a specific state machine update to the underlying commit handler via the replicator.
+   *
+   * @param message to commit to the underlying commit handler.
+   * @return state of the commit when done.
+   */
+  CommitState commit(CommitMessage message);
 }

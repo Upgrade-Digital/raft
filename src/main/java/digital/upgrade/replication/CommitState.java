@@ -6,43 +6,44 @@ package digital.upgrade.replication;
  */
 public final class CommitState {
 
-    private long time;
+  private long time;
 
-    /**
-     * Return the time of commit execution.
-     *
-     * @return commit time in milliseconds.
-     */
-    public long getTime() {
-        return time;
+  /**
+   * Return the time of commit execution.
+   *
+   * @return commit time in milliseconds.
+   */
+  public long getTime() {
+    return time;
+  }
+
+  private CommitState() {
+  }
+
+  /**
+   * Creates a new builder for a commit state response.
+   *
+   * @return new builder instance.
+   */
+  public static Builder newBuilder() {
+    return new Builder();
+  }
+
+  public static class Builder {
+
+    private CommitState result;
+
+    private Builder() {
+      result = new CommitState();
     }
 
-    private CommitState() {}
-
-    /**
-     * Creates a new builder for a commit state response.
-     *
-     * @return new builder instance.
-     */
-    public static Builder newBuilder() {
-        return new Builder();
+    public CommitState build() {
+      return result;
     }
 
-    public static class Builder {
-
-        private CommitState result;
-
-        private Builder() {
-            result = new CommitState();
-        }
-
-        public CommitState build() {
-            return result;
-        }
-
-        public Builder setTime(long time) {
-            result.time = time;
-            return this;
-        }
+    public Builder setTime(long time) {
+      result.time = time;
+      return this;
     }
+  }
 }
