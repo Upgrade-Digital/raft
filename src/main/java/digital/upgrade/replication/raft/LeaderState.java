@@ -1,8 +1,12 @@
 package digital.upgrade.replication.raft;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static digital.upgrade.replication.raft.Raft.Peer;
 
@@ -33,5 +37,21 @@ final class LeaderState {
       nextIndex.put(peer, nextCommit);
       matchIndex.put(peer, initialIndex);
     }
+  }
+
+  int peerCount() {
+    return nextIndex.size();
+  }
+
+  CommitIndex nextIndex(Peer peer) {
+    return nextIndex.get(peer);
+  }
+
+  CommitIndex appliedIndex(Peer peer) {
+    return matchIndex.get(peer);
+  }
+
+  Set<Peer> peerSet() {
+    return ImmutableSet.copyOf(nextIndex.keySet());
   }
 }
