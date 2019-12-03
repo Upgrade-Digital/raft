@@ -138,4 +138,9 @@ public class CommitIndex {
     }
     return false;
   }
+
+  public boolean greaterThanEqual(CommitIndex other) {
+    return (mostSignificant == other.getMostSignificantLong() && leastSignificant == other.getLeastSignificant()) ||
+        greaterThan(other);
+  }
 }

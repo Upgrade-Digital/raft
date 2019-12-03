@@ -213,7 +213,19 @@ public final class RaftReplicator implements CommitReplicator {
    * @return VoteResult with vote granted true if vote granted.
    */
   VoteResult requestVote(VoteRequest voteRequest) {
-    return null;
+    CommitIndex candidateIndex = new CommitIndex(voteRequest.getLastLogIndex());
+    if (null == votedFor ||
+        (votedFor.equals(voteRequest.getCandidate()) && candidateIndex.greaterThanEqual(getCommittedIndex()))) {
+        votedFor = voteRequest.getCandidate();
+        return VoteResult.newBuilder()
+            .setVoteGranted(true)
+            .setVoterTerm(getCurrentTerm())
+            .build();
+    }
+    return VoteResult.newBuilder()
+        .setVoteGranted(false)
+        .setVoterTerm(getCurrentTerm())
+        .build();
   }
 
   /**

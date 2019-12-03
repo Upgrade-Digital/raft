@@ -71,7 +71,7 @@ public class CommitIndexTest {
     }
 
     @Test
-    public void testPieviousIndex() {
+    public void testPreviousIndex() {
         CommitIndex index = new CommitIndex(1, 0);
         CommitIndex previous = index.previousValue();
         assertEquals(previous.getMostSignificantLong(), 0L);
@@ -82,5 +82,26 @@ public class CommitIndexTest {
     public void testPreviousUnderflow() {
         CommitIndex index = new CommitIndex(0, 0);
         index.previousValue();
+    }
+
+    @Test
+    public void testGreater() {
+        CommitIndex least = new CommitIndex(0, 0);
+        CommitIndex greater = new CommitIndex(0, 1);
+        assertTrue(greater.greaterThan(least));
+    }
+
+    @Test
+    public void testGreaterEqualGreater() {
+        CommitIndex least = new CommitIndex(0, 0);
+        CommitIndex greater = new CommitIndex(0, 1);
+        assertTrue(greater.greaterThan(least));
+    }
+
+    @Test
+    public void testEqual() {
+        CommitIndex least = new CommitIndex(1, 1);
+        CommitIndex equal = new CommitIndex(1, 1);
+        assertTrue(equal.greaterThanEqual(least));
     }
 }
