@@ -10,7 +10,9 @@ import digital.upgrade.replication.raft.Raft.Term;
 import digital.upgrade.replication.raft.Raft.VoteRequest;
 import digital.upgrade.replication.raft.Raft.VoteResult;
 
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 public class RaftReplicatorVoteTest {
 
@@ -33,5 +35,65 @@ public class RaftReplicatorVoteTest {
         .setLastLogTerm(FIRST_TERM)
         .build());
     assertNotNull(result);
+  }
+
+  @Test
+  public void testVoteTrueNoPrior() {
+    RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
+    VoteResult result = replicator.requestVote(VoteRequest.newBuilder()
+        .setCandidateTerm(Term.newBuilder()
+            .setNumber(1)
+            .build())
+        .setCandidate(Peer.newBuilder()
+            .setUuid(UUID.randomUUID().toString())
+            .build())
+        .setLastLogIndex(FIRST_LOG_INDEX)
+        .setLastLogTerm(FIRST_TERM)
+        .build());
+    assertTrue(result.getVoteGranted());
+  }
+
+  @Test
+  public void testRetryVoteGranted() {
+    RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
+    VoteRequest request = VoteRequest.newBuilder()
+        .setCandidateTerm(Term.newBuilder()
+            .setNumber(1)
+            .build())
+        .setCandidate(Peer.newBuilder()
+            .setUuid(UUID.randomUUID().toString())
+            .build())
+        .setLastLogIndex(FIRST_LOG_INDEX)
+        .setLastLogTerm(FIRST_TERM)
+        .build();
+    replicator.requestVote(request);
+    VoteResult result = replicator.requestVote(request);
+    assertTrue(result.getVoteGranted());
+  }
+
+  @Test
+  public void testFalseAlreadyVoted() {
+    RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
+    replicator.requestVote(VoteRequest.newBuilder()
+        .setCandidateTerm(Term.newBuilder()
+            .setNumber(1)
+            .build())
+        .setCandidate(Peer.newBuilder()
+            .setUuid(UUID.randomUUID().toString())
+            .build())
+        .setLastLogIndex(FIRST_LOG_INDEX)
+        .setLastLogTerm(FIRST_TERM)
+        .build());
+    VoteResult result = replicator.requestVote(VoteRequest.newBuilder()
+        .setCandidateTerm(Term.newBuilder()
+            .setNumber(2)
+            .build())
+        .setCandidate(Peer.newBuilder()
+            .setUuid(UUID.randomUUID().toString())
+            .build())
+        .setLastLogIndex(FIRST_LOG_INDEX)
+        .setLastLogTerm(FIRST_TERM)
+        .build());
+    assertFalse(result.getVoteGranted());
   }
 }
