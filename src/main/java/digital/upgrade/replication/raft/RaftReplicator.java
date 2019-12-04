@@ -7,6 +7,7 @@ import digital.upgrade.replication.raft.Raft.AppendRequest;
 import digital.upgrade.replication.raft.Raft.AppendResult;
 import digital.upgrade.replication.raft.Raft.Entry;
 import digital.upgrade.replication.raft.Raft.Index;
+import digital.upgrade.replication.raft.Raft.Term;
 import digital.upgrade.replication.raft.Raft.VoteRequest;
 import digital.upgrade.replication.raft.Raft.VoteResult;
 
@@ -24,7 +25,8 @@ import static digital.upgrade.replication.raft.Raft.PersistentState;
  * Raft implementation of commit replicator which uses election to select a
  * leader which coordinates commits from clients.
  */
-public final class RaftReplicator implements CommitReplicator {
+public final class RaftReplicator implements CommitReplicator,
+    RequestVoteListener, AppendEntryListener {
 
   private static final Logger LOG = LoggerFactory.getLogger(RaftReplicator.class);
 
@@ -33,12 +35,14 @@ public final class RaftReplicator implements CommitReplicator {
   private ClockSource clock;
   private InstanceState state;
 
-  private Raft.Term currentTerm = Raft.Term.newBuilder()
+  private Term currentTerm = Term.newBuilder()
       .setNumber(-1)
       .build();
   private Peer votedFor;
   private CommitIndex committed;
   private CommitIndex applied;
+  private Peer self;
+  private MessageTransport transport;
 
   private RaftReplicator() {
   }
@@ -92,7 +96,7 @@ public final class RaftReplicator implements CommitReplicator {
    *
    * @return election term for the current election.
    */
-  Raft.Term getCurrentTerm() {
+  Term getCurrentTerm() {
     return currentTerm;
   }
 
@@ -138,11 +142,17 @@ public final class RaftReplicator implements CommitReplicator {
    *
    * @return state of the instance as a leader, follower or election candidate.
    */
-  public InstanceState getState() {
+  InstanceState getState() {
     return state;
   }
 
-  AppendResult append(AppendRequest request) {
+  /**
+   * Handle requests to append entries to the underlying handler.
+   *
+   * @param request to process
+   * @return append result which will be returned to the caller
+   */
+  public AppendResult append(AppendRequest request) {
     if (request.getLeaderTerm().getNumber() < getCurrentTerm().getNumber()) {
       LOG.debug("Append failure: request leader term < current term");
       return failureResponse();
@@ -212,7 +222,8 @@ public final class RaftReplicator implements CommitReplicator {
    * @param voteRequest to consider for voting from a candidate
    * @return VoteResult with vote granted true if vote granted.
    */
-  VoteResult requestVote(VoteRequest voteRequest) {
+  @Override
+  public VoteResult requestVote(VoteRequest voteRequest) {
     CommitIndex candidateIndex = new CommitIndex(voteRequest.getLastLogIndex());
     if (null == votedFor ||
         (votedFor.equals(voteRequest.getCandidate()) && candidateIndex.greaterThanEqual(getCommittedIndex()))) {
@@ -226,6 +237,14 @@ public final class RaftReplicator implements CommitReplicator {
         .setVoteGranted(false)
         .setVoterTerm(getCurrentTerm())
         .build();
+  }
+
+  Peer getSelf() {
+    return self;
+  }
+
+  Peer getVoteCast() {
+    return votedFor;
   }
 
   /**
@@ -250,6 +269,18 @@ public final class RaftReplicator implements CommitReplicator {
 
     Builder setClockSource(ClockSource clock) {
       result.clock = clock;
+      return this;
+    }
+
+    Builder setSelf(Peer self) {
+      result.self = self;
+      return this;
+    }
+
+    Builder setTransport(MessageTransport transport) {
+      result.transport = transport;
+      transport.setAppendListener(result);
+      transport.setVoteListener(result);
       return this;
     }
 
