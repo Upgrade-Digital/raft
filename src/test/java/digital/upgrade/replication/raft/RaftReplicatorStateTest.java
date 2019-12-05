@@ -3,10 +3,12 @@ package digital.upgrade.replication.raft;
 import com.google.protobuf.ByteString;
 
 import digital.upgrade.replication.CommitState;
+import digital.upgrade.replication.raft.Raft.Peer;
 
 import org.testng.annotations.Test;
 
 import java.util.Map;
+import java.util.UUID;
 
 import static digital.upgrade.replication.Model.CommitMessage;
 import static org.testng.Assert.*;
@@ -88,6 +90,9 @@ public class RaftReplicatorStateTest {
         .setClockSource(clock)
         .setStateManager(stateManager)
         .setCommitHandler(commitHandler)
+        .setSelf(Peer.newBuilder()
+            .setUuid(UUID.randomUUID().toString())
+            .build())
         .build();
     replicator.startup();
     return replicator;

@@ -247,6 +247,14 @@ public final class RaftReplicator implements CommitReplicator,
     return votedFor;
   }
 
+  void setAppliedIndex(CommitIndex applied) {
+    this.applied = applied;
+  }
+
+  StateManager getStateManager() {
+    return stateManager;
+  }
+
   /**
    * Raft instance builder which handles the construction of Raft instances.
    */
