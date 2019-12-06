@@ -38,8 +38,8 @@ message Entry {
 message AppendRequest {
   required Term leaderTerm = 1;
   required Peer leader = 2;
-  required Index previousIndex= 3;
-  required Term previousTerm = 4;
+  optional Index previousIndex = 3;
+  optional Term previousTerm = 4;
   repeated Entry entries = 5;
   required Index leaderIndex = 6;
 }

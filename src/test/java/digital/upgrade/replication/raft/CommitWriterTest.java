@@ -15,7 +15,7 @@ import static org.testng.Assert.assertEquals;
 public class CommitWriterTest {
 
   @Test
-  public void testApplyFirstIndex() {
+  public void testApplyFirstEntry() {
     ClockSource clock = new CallCountingClock();
     InMemoryCommitHandler handler = new InMemoryCommitHandler(clock);
     RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
@@ -23,8 +23,6 @@ public class CommitWriterTest {
         .setLeaderIndex(replicator.getCommittedIndex().indexValue())
         .setLeaderTerm(replicator.getCurrentTerm())
         .setLeader(replicator.getSelf())
-        .setPreviousTerm(replicator.getCurrentTerm())
-        .setPreviousIndex(replicator.getCommittedIndex().previousValue().indexValue())
         .addEntries(Entry.newBuilder()
             .setTerm(replicator.getCurrentTerm())
             .setCommit(replicator.getCommittedIndex().nextIndex().indexValue())
