@@ -31,6 +31,7 @@ public class CommitWriterTest {
                 .setData(ByteString.copyFrom("hello", Charsets.UTF_8))
                 .build().toByteString()))
         .build());
+    assertEquals(replicator.getCommittedIndex(), new CommitIndex(0, 1));
     CommitWriter writer = new CommitWriter(replicator, replicator.getStateManager(), handler);
     writer.run();
     Map<Long, CommitMessage> commits = handler.getCommits();
