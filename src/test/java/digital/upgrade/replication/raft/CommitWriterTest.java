@@ -6,7 +6,6 @@ import org.testng.annotations.Test;
 
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -14,15 +13,15 @@ import digital.upgrade.replication.Model.CommitMessage;
 import digital.upgrade.replication.raft.Raft.AppendRequest;
 import digital.upgrade.replication.raft.Raft.Entry;
 import digital.upgrade.replication.raft.Raft.Peer;
-import digital.upgrade.replication.raft.RaftReplicator.Builder;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 public class CommitWriterTest {
 
   @Test
   public void testApplyFirstEntry() throws InterruptedException {
-    Executor executor = Executors.newSingleThreadExecutor();
+    ExecutorService executor = Executors.newSingleThreadExecutor();
     ClockSource clock = new CallCountingClock();
     InMemoryCommitHandler handler = new InMemoryCommitHandler(clock);
     RaftReplicator replicator = runningReplicator(clock, executor);
@@ -43,8 +42,9 @@ public class CommitWriterTest {
     int tries = 0;
     while (replicator.getCommittedIndex().greaterThan(replicator.getAppliedIndex()) &&
         (tries++ < 10)) {
-      Thread.sleep(100);
+      Thread.sleep(1000);
     }
+    assertEquals(replicator.getAppliedIndex(), replicator.getCommittedIndex());
     assertEquals(commits.size(), 1);
     assertEquals(commits.get(777L), CommitMessage.newBuilder()
         .setScope("world")
@@ -52,7 +52,7 @@ public class CommitWriterTest {
         .build());
   }
 
-  private RaftReplicator runningReplicator(ClockSource clock, Executor executor) {
+  private RaftReplicator runningReplicator(ClockSource clock, ExecutorService executor) {
     InMemoryStateManager stateManager = new InMemoryStateManager(clock);
     InMemoryCommitHandler commitHandler = new InMemoryCommitHandler(clock);
     RaftReplicator replicator = RaftReplicator.newBuilder()

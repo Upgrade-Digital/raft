@@ -30,6 +30,8 @@ class CommitWriter implements Runnable {
 
   @Override
   public void run() {
+    LOG.info("Commit Writer flushing non applied messages {} with applied at {}",
+        replicator.getCommittedIndex(), replicator.getAppliedIndex());
     CommitIndex apply;
     while (replicator.getCommittedIndex().greaterThan(apply = replicator.getAppliedIndex())) {
       if (!state.hasCommit(apply.indexValue())) {

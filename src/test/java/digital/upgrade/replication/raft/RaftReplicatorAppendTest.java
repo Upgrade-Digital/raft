@@ -14,6 +14,7 @@ import org.testng.annotations.Test;
 
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.concurrent.Executors;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
@@ -56,6 +57,7 @@ public final class RaftReplicatorAppendTest {
         .setClockSource(clock)
         .setStateManager(new InMemoryStateManager(clock))
         .setCommitHandler(new InMemoryCommitHandler(clock))
+        .setExecutor(Executors.newSingleThreadExecutor())
         .build();
     assertNotNull(replicator.commit(CommitMessage.newBuilder().build()));
   }
