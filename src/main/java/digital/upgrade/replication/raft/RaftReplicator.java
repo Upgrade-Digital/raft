@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.concurrent.Executor;
 
 import static digital.upgrade.replication.Model.CommitMessage;
 import static digital.upgrade.replication.raft.Raft.Peer;
@@ -34,6 +35,7 @@ public final class RaftReplicator implements CommitReplicator,
   private CommitHandler commitHandler;
   private ClockSource clock;
   private InstanceState state;
+  private Executor executor;
 
   private Term currentTerm = Term.newBuilder()
       .setNumber(-1)
@@ -173,6 +175,7 @@ public final class RaftReplicator implements CommitReplicator,
       committed = leaderIndex;
     }
     LOG.debug("Append success: committed {} log entries", request.getEntriesCount());
+    executor.execute(new CommitWriter(this, stateManager, commitHandler));
     return AppendResult.newBuilder()
         .setSuccess(true)
         .setTerm(getCurrentTerm())
@@ -289,6 +292,11 @@ public final class RaftReplicator implements CommitReplicator,
       result.transport = transport;
       transport.setAppendListener(result);
       transport.setVoteListener(result);
+      return this;
+    }
+
+    Builder setExecutor(Executor executor) {
+      result.executor = executor;
       return this;
     }
 
