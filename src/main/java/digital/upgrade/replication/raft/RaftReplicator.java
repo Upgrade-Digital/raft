@@ -1,5 +1,12 @@
 package digital.upgrade.replication.raft;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+
 import digital.upgrade.replication.CommitHandler;
 import digital.upgrade.replication.CommitReplicator;
 import digital.upgrade.replication.CommitState;
@@ -10,15 +17,6 @@ import digital.upgrade.replication.raft.Raft.Index;
 import digital.upgrade.replication.raft.Raft.Term;
 import digital.upgrade.replication.raft.Raft.VoteRequest;
 import digital.upgrade.replication.raft.Raft.VoteResult;
-
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 
 import static digital.upgrade.replication.Model.CommitMessage;
 import static digital.upgrade.replication.raft.Raft.Peer;
@@ -256,12 +254,8 @@ public final class RaftReplicator implements CommitReplicator,
     this.applied = applied;
   }
 
-  StateManager getStateManager() {
-    return stateManager;
-  }
-
   @Override
-  public void close() throws IOException {
+  public void close() {
     executor.shutdown();
   }
 

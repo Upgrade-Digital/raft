@@ -1,6 +1,5 @@
 package digital.upgrade.replication.raft;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import java.util.Collection;

@@ -15,12 +15,11 @@ import digital.upgrade.replication.raft.Raft.Entry;
 import digital.upgrade.replication.raft.Raft.Peer;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 
 public class CommitWriterTest {
 
   @Test
-  public void testApplyFirstEntry() throws InterruptedException {
+  public void testApplyFirstEntry() {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     ClockSource clock = new CallCountingClock();
     InMemoryCommitHandler handler = new InMemoryCommitHandler(clock);
@@ -39,11 +38,6 @@ public class CommitWriterTest {
         .build());
     assertEquals(replicator.getCommittedIndex(), new CommitIndex(0, 1));
     Map<Long, CommitMessage> commits = handler.getCommits();
-    int tries = 0;
-    while (replicator.getCommittedIndex().greaterThan(replicator.getAppliedIndex()) &&
-        (tries++ < 10)) {
-      Thread.sleep(1000);
-    }
     assertEquals(replicator.getAppliedIndex(), replicator.getCommittedIndex());
     assertEquals(commits.size(), 1);
     assertEquals(commits.get(777L), CommitMessage.newBuilder()

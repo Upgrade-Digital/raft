@@ -13,7 +13,7 @@ public class InMemoryCommitHandler implements CommitHandler {
   private final ClockSource clock;
   private Map<Long, Model.CommitMessage> commits = new HashMap<>();
 
-  public InMemoryCommitHandler(ClockSource clock) {
+  InMemoryCommitHandler(ClockSource clock) {
     this.clock = clock;
   }
 
@@ -23,7 +23,7 @@ public class InMemoryCommitHandler implements CommitHandler {
     return true;
   }
 
-  public Map<Long, Model.CommitMessage> getCommits() {
+  Map<Long, Model.CommitMessage> getCommits() {
     return ImmutableMap.copyOf(commits);
   }
 }

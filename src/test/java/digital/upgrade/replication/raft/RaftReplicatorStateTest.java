@@ -9,7 +9,6 @@ import org.testng.annotations.Test;
 
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Executors;
 
 import static digital.upgrade.replication.Model.CommitMessage;
 import static org.testng.Assert.*;
@@ -49,7 +48,7 @@ public class RaftReplicatorStateTest {
         .setClockSource(clock)
         .setStateManager(stateManager)
         .setCommitHandler(commitHandler)
-        .setExecutor(Executors.newSingleThreadExecutor())
+        .setExecutor(new SynchronousExecutor())
         .build();
     replicator.startup();
 
@@ -92,7 +91,7 @@ public class RaftReplicatorStateTest {
         .setClockSource(clock)
         .setStateManager(stateManager)
         .setCommitHandler(commitHandler)
-        .setExecutor(Executors.newSingleThreadExecutor())
+        .setExecutor(new SynchronousExecutor())
         .setSelf(Peer.newBuilder()
             .setUuid(UUID.randomUUID().toString())
             .build())

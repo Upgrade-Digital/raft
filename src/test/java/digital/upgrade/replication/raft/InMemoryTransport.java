@@ -11,13 +11,10 @@ import digital.upgrade.replication.raft.Raft.VoteResult;
 
 public class InMemoryTransport implements MessageTransport {
 
-  private RequestVoteListener voteListener;
-  private AppendEntryListener appendListener;
   private Map<Peer, RaftReplicator> peers = new HashMap<>();
 
   @Override
   public void setVoteListener(RequestVoteListener listener) {
-    this.voteListener = listener;
   }
 
   @Override
@@ -27,7 +24,6 @@ public class InMemoryTransport implements MessageTransport {
 
   @Override
   public void setAppendListener(AppendEntryListener listener) {
-    this.appendListener = listener;
   }
 
   @Override
@@ -35,7 +31,7 @@ public class InMemoryTransport implements MessageTransport {
     return peers.get(peer).append(request);
   }
 
-  public void addPeer(Peer peer, RaftReplicator replicator) {
+  void addPeer(Peer peer, RaftReplicator replicator) {
     peers.put(peer, replicator);
   }
 }

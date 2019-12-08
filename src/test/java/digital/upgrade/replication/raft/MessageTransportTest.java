@@ -6,8 +6,6 @@ import org.testng.annotations.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import digital.upgrade.replication.raft.Raft.AppendRequest;
 import digital.upgrade.replication.raft.Raft.Entry;
@@ -95,7 +93,7 @@ public class MessageTransportTest {
         .setStateManager(stateManager)
         .setCommitHandler(commitHandler)
         .setTransport(transport)
-        .setExecutor(Executors.newSingleThreadExecutor())
+        .setExecutor(new SynchronousExecutor())
         .build();
     replicator.startup();
     return replicator;
