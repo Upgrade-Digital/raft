@@ -21,7 +21,7 @@ import static org.testng.Assert.assertEquals;
 public class CommitWriterTest {
 
   @Test
-  public void testApplyFirstEntry() {
+  public void testApplyFirstEntry() throws InterruptedException {
     Executor executor = Executors.newSingleThreadExecutor();
     ClockSource clock = new CallCountingClock();
     InMemoryCommitHandler handler = new InMemoryCommitHandler(clock);
@@ -39,9 +39,12 @@ public class CommitWriterTest {
                 .build().toByteString()))
         .build());
     assertEquals(replicator.getCommittedIndex(), new CommitIndex(0, 1));
-    CommitWriter writer = new CommitWriter(replicator, replicator.getStateManager(), handler);
-    writer.run();
     Map<Long, CommitMessage> commits = handler.getCommits();
+    int tries = 0;
+    while (replicator.getCommittedIndex().greaterThan(replicator.getAppliedIndex()) &&
+        (tries++ < 10)) {
+      Thread.sleep(100);
+    }
     assertEquals(commits.size(), 1);
     assertEquals(commits.get(777L), CommitMessage.newBuilder()
         .setScope("world")

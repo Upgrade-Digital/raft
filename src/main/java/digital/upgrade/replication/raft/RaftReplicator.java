@@ -15,8 +15,10 @@ import digital.upgrade.replication.raft.Raft.VoteResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 import static digital.upgrade.replication.Model.CommitMessage;
 import static digital.upgrade.replication.raft.Raft.Peer;
@@ -27,7 +29,7 @@ import static digital.upgrade.replication.raft.Raft.PersistentState;
  * leader which coordinates commits from clients.
  */
 public final class RaftReplicator implements CommitReplicator,
-    RequestVoteListener, AppendEntryListener {
+    RequestVoteListener, AppendEntryListener, Closeable {
 
   private static final Logger LOG = LoggerFactory.getLogger(RaftReplicator.class);
 
@@ -35,7 +37,7 @@ public final class RaftReplicator implements CommitReplicator,
   private CommitHandler commitHandler;
   private ClockSource clock;
   private InstanceState state;
-  private Executor executor;
+  private ExecutorService executor;
 
   private Term currentTerm = Term.newBuilder()
       .setNumber(-1)
@@ -258,6 +260,11 @@ public final class RaftReplicator implements CommitReplicator,
     return stateManager;
   }
 
+  @Override
+  public void close() throws IOException {
+    executor.shutdown();
+  }
+
   /**
    * Raft instance builder which handles the construction of Raft instances.
    */
@@ -295,7 +302,7 @@ public final class RaftReplicator implements CommitReplicator,
       return this;
     }
 
-    Builder setExecutor(Executor executor) {
+    Builder setExecutor(ExecutorService executor) {
       result.executor = executor;
       return this;
     }
@@ -315,6 +322,9 @@ public final class RaftReplicator implements CommitReplicator,
       }
       if (null == result.clock) {
         throw new IllegalStateException("Can't construct RaftReplicator without clock source");
+      }
+      if (null == result.executor) {
+        throw new IllegalStateException("Can't construct RaftReplicator without executor");
       }
       return result;
     }
