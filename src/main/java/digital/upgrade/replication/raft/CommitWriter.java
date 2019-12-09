@@ -32,6 +32,7 @@ class CommitWriter implements Runnable {
         replicator.getCommittedIndex(), replicator.getAppliedIndex());
     CommitIndex apply;
     while (replicator.getCommittedIndex().greaterThan(apply = replicator.getAppliedIndex())) {
+      apply = apply.nextIndex();
       if (!state.hasCommit(apply.indexValue())) {
         LOG.info("Replicator reported non applied commit {} not found in store", apply);
         break;
