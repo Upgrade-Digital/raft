@@ -45,6 +45,7 @@ public final class RaftReplicator implements CommitReplicator,
   private CommitIndex applied;
   private Peer self;
   private MessageTransport transport;
+  private Peer leader;
 
   private RaftReplicator() {
   }
@@ -146,6 +147,23 @@ public final class RaftReplicator implements CommitReplicator,
    */
   InstanceState getState() {
     return state;
+  }
+
+  /**
+   * Elect self to be the leader.
+   */
+  void elect() {
+    leader = self;
+    state = InstanceState.LEADER;
+  }
+
+  /**
+   * Return the current value for the peer who is the leader.
+   *
+   * @return Peer leader
+   */
+  Peer getLeader() {
+    return leader;
   }
 
   /**
