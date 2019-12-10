@@ -15,10 +15,10 @@ import java.util.Map;
  */
 public class InMemoryCommitHandler implements CommitHandler {
 
-  private final ClockSource clock;
+  private final Clock clock;
   private Map<Long, Model.CommitMessage> commits = new HashMap<>();
 
-  InMemoryCommitHandler(ClockSource clock) {
+  InMemoryCommitHandler(Clock clock) {
     this.clock = clock;
   }
 

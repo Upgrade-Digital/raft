@@ -14,12 +14,12 @@ public final class InMemoryStateManager implements StateManager {
 
   private static final long INITIAL_TERM_VALUE = 0;
 
-  private final ClockSource clock;
+  private final Clock clock;
   private PersistentState state;
   private long lastWriteTime = -1;
   private Map<Raft.Index, Entry> commits = new HashMap<>();
 
-  InMemoryStateManager(ClockSource clock) {
+  InMemoryStateManager(Clock clock) {
     this.clock = clock;
   }
 

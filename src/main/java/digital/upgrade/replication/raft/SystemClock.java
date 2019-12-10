@@ -1,14 +1,12 @@
 package digital.upgrade.replication.raft;
 
-import java.time.Clock;
-
 /**
  * Implementation of ClockSource which uses the underlying system clock UTC milliseconds since Epoch.
  */
-public final class SystemClock implements ClockSource {
+public final class SystemClock implements Clock {
 
   @Override
   public long currentTime() {
-    return Clock.systemUTC().millis();
+    return java.time.Clock.systemUTC().millis();
   }
 }

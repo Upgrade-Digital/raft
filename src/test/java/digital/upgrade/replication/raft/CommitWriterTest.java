@@ -22,7 +22,7 @@ public class CommitWriterTest {
   @Test
   public void testApplyFirstEntry() {
     ExecutorService executor = Executors.newSingleThreadExecutor();
-    ClockSource clock = new CallCountingClock();
+    Clock clock = new CallCountingClock();
     InMemoryCommitHandler handler = new InMemoryCommitHandler(clock);
     RaftReplicator replicator = runningReplicator(clock, executor, handler);
     replicator.append(AppendRequest.newBuilder()
@@ -47,7 +47,7 @@ public class CommitWriterTest {
         .build());
   }
 
-  private RaftReplicator runningReplicator(ClockSource clock, ExecutorService executor, CommitHandler commitHandler) {
+  private RaftReplicator runningReplicator(Clock clock, ExecutorService executor, CommitHandler commitHandler) {
     InMemoryStateManager stateManager = new InMemoryStateManager(clock);
     RaftReplicator replicator = RaftReplicator.newBuilder()
         .setExecutor(executor)

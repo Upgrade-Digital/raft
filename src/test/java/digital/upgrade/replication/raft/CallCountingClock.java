@@ -1,6 +1,6 @@
 package digital.upgrade.replication.raft;
 
-public class CallCountingClock implements ClockSource {
+public class CallCountingClock implements Clock {
 
   private long time = 0;
 

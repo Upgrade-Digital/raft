@@ -51,7 +51,7 @@ public final class RaftReplicatorAppendTest {
 
   @Test
   public void testCommitReturnsCommitState() {
-    ClockSource clock = new SystemClock();
+    Clock clock = new SystemClock();
     CommitReplicator replicator = RaftReplicator.newBuilder()
         .setClockSource(clock)
         .setStateManager(new InMemoryStateManager(clock))

@@ -33,7 +33,7 @@ public final class RaftReplicator implements CommitReplicator,
 
   private StateManager stateManager;
   private CommitHandler commitHandler;
-  private ClockSource clock;
+  private Clock clock;
   private InstanceState state;
   private ExecutorService executor;
 
@@ -46,6 +46,7 @@ public final class RaftReplicator implements CommitReplicator,
   private Peer self;
   private MessageTransport transport;
   private Peer leader;
+  private Controller controller;
 
   private RaftReplicator() {
   }
@@ -78,6 +79,8 @@ public final class RaftReplicator implements CommitReplicator,
     try {
       restoreState();
       state = InstanceState.FOLLOWER;
+      controller = new FollowerController(this, clock);
+      executor.execute(controller);
     } catch (IOException e) {
       LOG.error("Error restoring persistent state");
     }
@@ -277,6 +280,11 @@ public final class RaftReplicator implements CommitReplicator,
     executor.shutdown();
   }
 
+  void convertToCandidate() {
+    state = InstanceState.CANDIDATE;
+    controller = new CandidateController();
+  }
+
   /**
    * Raft instance builder which handles the construction of Raft instances.
    */
@@ -297,7 +305,7 @@ public final class RaftReplicator implements CommitReplicator,
       return this;
     }
 
-    Builder setClockSource(ClockSource clock) {
+    Builder setClockSource(Clock clock) {
       result.clock = clock;
       return this;
     }

@@ -84,7 +84,7 @@ public class MessageTransportTest {
   }
 
   private static RaftReplicator newReplicator(Peer self, MessageTransport transport) {
-    ClockSource clock = new CallCountingClock();
+    Clock clock = new CallCountingClock();
     InMemoryStateManager stateManager = new InMemoryStateManager(clock);
     InMemoryCommitHandler commitHandler = new InMemoryCommitHandler(clock);
     RaftReplicator replicator = RaftReplicator.newBuilder()

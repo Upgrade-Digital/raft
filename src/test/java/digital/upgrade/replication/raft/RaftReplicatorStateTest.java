@@ -40,7 +40,7 @@ public class RaftReplicatorStateTest {
    */
   @Test
   public void currentStatePersistedBeforeResponding() {
-    ClockSource clock = new CallCountingClock();
+    Clock clock = new CallCountingClock();
     InMemoryStateManager stateManager = new InMemoryStateManager(clock);
     InMemoryCommitHandler commitHandler = new InMemoryCommitHandler(clock);
 
@@ -84,7 +84,7 @@ public class RaftReplicatorStateTest {
   }
 
   static RaftReplicator startedReplicator() {
-    ClockSource clock = new CallCountingClock();
+    Clock clock = new CallCountingClock();
     InMemoryStateManager stateManager = new InMemoryStateManager(clock);
     InMemoryCommitHandler commitHandler = new InMemoryCommitHandler(clock);
     RaftReplicator replicator = RaftReplicator.newBuilder()
