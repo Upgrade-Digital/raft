@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 
 import digital.upgrade.replication.CommitHandler;
 import digital.upgrade.replication.CommitReplicator;
@@ -35,7 +35,7 @@ public final class RaftReplicator implements CommitReplicator,
   private CommitHandler commitHandler;
   private Clock clock;
   private InstanceState state;
-  private ExecutorService executor;
+  private ScheduledExecutorService executor;
 
   private Term currentTerm = Term.newBuilder()
       .setNumber(-1)
@@ -47,6 +47,7 @@ public final class RaftReplicator implements CommitReplicator,
   private MessageTransport transport;
   private Peer leader;
   private Controller controller;
+  private Time lastUpdatedTime;
 
   private RaftReplicator() {
   }
@@ -61,7 +62,7 @@ public final class RaftReplicator implements CommitReplicator,
   public CommitState commit(CommitMessage message) {
     commitHandler.write(message);
     return CommitState.newBuilder()
-        .setTime(clock.currentTime())
+        .setTime(clock.currentTime().toEpochMillis())
         .build();
   }
 
@@ -79,7 +80,7 @@ public final class RaftReplicator implements CommitReplicator,
     try {
       restoreState();
       state = InstanceState.FOLLOWER;
-      controller = new FollowerController(this, clock);
+      controller = new FollowerController(this, executor, clock);
       executor.execute(controller);
     } catch (IOException e) {
       LOG.error("Error restoring persistent state");
@@ -196,6 +197,7 @@ public final class RaftReplicator implements CommitReplicator,
       committed = leaderIndex;
     }
     LOG.debug("Append success: committed {} log entries", request.getEntriesCount());
+    lastUpdatedTime = clock.currentTime();
     executor.execute(new CommitWriter(this, stateManager, commitHandler));
     return AppendResult.newBuilder()
         .setSuccess(true)
@@ -285,6 +287,10 @@ public final class RaftReplicator implements CommitReplicator,
     controller = new CandidateController();
   }
 
+  Time getLastAppendTime() {
+    return lastUpdatedTime;
+  }
+
   /**
    * Raft instance builder which handles the construction of Raft instances.
    */
@@ -322,7 +328,7 @@ public final class RaftReplicator implements CommitReplicator,
       return this;
     }
 
-    Builder setExecutor(ExecutorService executor) {
+    Builder setExecutor(ScheduledExecutorService executor) {
       result.executor = executor;
       return this;
     }

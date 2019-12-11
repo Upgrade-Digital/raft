@@ -16,7 +16,7 @@ import java.util.Map;
 public class InMemoryCommitHandler implements CommitHandler {
 
   private final Clock clock;
-  private Map<Long, Model.CommitMessage> commits = new HashMap<>();
+  private Map<Time, Model.CommitMessage> commits = new HashMap<>();
 
   InMemoryCommitHandler(Clock clock) {
     this.clock = clock;
@@ -28,7 +28,7 @@ public class InMemoryCommitHandler implements CommitHandler {
     return true;
   }
 
-  Map<Long, Model.CommitMessage> getCommits() {
+  Map<Time, Model.CommitMessage> getCommits() {
     return ImmutableMap.copyOf(commits);
   }
 }

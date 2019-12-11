@@ -6,7 +6,7 @@ package digital.upgrade.replication.raft;
 public final class SystemClock implements Clock {
 
   @Override
-  public long currentTime() {
-    return java.time.Clock.systemUTC().millis();
+  public Time currentTime() {
+    return new Time(java.time.Clock.systemUTC().millis());
   }
 }
