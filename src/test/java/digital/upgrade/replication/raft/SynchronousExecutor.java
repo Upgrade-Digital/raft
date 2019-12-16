@@ -109,7 +109,7 @@ public class SynchronousExecutor implements ScheduledExecutorService {
     throw new UnsupportedOperationException();
   }
 
-  static class SynchronousScheduledFuture implements ScheduledFuture {
+  static class SynchronousScheduledFuture<V> implements ScheduledFuture<V> {
 
     private final Runnable delegate;
     private final long delay;
@@ -143,7 +143,7 @@ public class SynchronousExecutor implements ScheduledExecutorService {
     }
 
     @Override
-    public Object get() {
+    public V get() {
       if (cancelled) {
         return null;
       }
@@ -153,7 +153,7 @@ public class SynchronousExecutor implements ScheduledExecutorService {
     }
 
     @Override
-    public Object get(long l, @Nonnull TimeUnit timeUnit) {
+    public V get(long l, @Nonnull TimeUnit timeUnit) {
       throw new UnsupportedOperationException();
     }
 

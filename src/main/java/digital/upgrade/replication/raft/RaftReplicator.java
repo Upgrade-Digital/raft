@@ -80,6 +80,7 @@ public final class RaftReplicator implements CommitReplicator,
     try {
       restoreState();
       state = InstanceState.FOLLOWER;
+      lastUpdatedTime = clock.currentTime();
       controller = new FollowerController(this, executor, clock);
       executor.execute(controller);
     } catch (IOException e) {
