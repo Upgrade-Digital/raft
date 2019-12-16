@@ -16,7 +16,7 @@ public final class InMemoryStateManager implements StateManager {
 
   private final Clock clock;
   private PersistentState state;
-  private Time lastWriteTime = -1;
+  private Time lastWriteTime = Time.fromEpochMillis(-1);
   private Map<Raft.Index, Entry> commits = new HashMap<>();
 
   InMemoryStateManager(Clock clock) {

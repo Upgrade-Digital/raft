@@ -56,7 +56,7 @@ public final class RaftReplicatorAppendTest {
         .setClockSource(clock)
         .setStateManager(new InMemoryStateManager(clock))
         .setCommitHandler(new InMemoryCommitHandler(clock))
-        .setExecutor(new SynchronousExecutor())
+        .setExecutor(new SynchronousExecutor(clock))
         .build();
     assertNotNull(replicator.commit(CommitMessage.newBuilder().build()));
   }

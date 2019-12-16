@@ -1,18 +1,16 @@
 package digital.upgrade.replication.raft;
 
-import java.time.Duration;
+import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Delayed;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class SynchronousExecutor implements ScheduledExecutorService {
 
@@ -28,8 +26,8 @@ public class SynchronousExecutor implements ScheduledExecutorService {
     runnable.run();
   }
 
-  @Override
-  public ScheduledFuture<?> schedule(Runnable runnable, long delay, TimeUnit timeUnit) {
+  @Override @Nonnull
+  public ScheduledFuture<?> schedule(@Nonnull Runnable runnable, long delay, @Nonnull TimeUnit timeUnit) {
     SynchronousScheduledFuture future = new SynchronousScheduledFuture(runnable, delay);
     Time at = clock.currentTime().plus(delay);
     schedule.put(at, future);
@@ -41,7 +39,7 @@ public class SynchronousExecutor implements ScheduledExecutorService {
     schedule.values().forEach(task -> task.cancel(false));
   }
 
-  @Override
+  @Override @Nonnull
   public List<Runnable> shutdownNow() {
     throw new UnsupportedOperationException();
   }
@@ -57,80 +55,76 @@ public class SynchronousExecutor implements ScheduledExecutorService {
   }
 
   @Override
-  public boolean awaitTermination(long l, TimeUnit timeUnit) throws InterruptedException {
+  public boolean awaitTermination(long l, @Nonnull TimeUnit timeUnit) {
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  public <T> Future<T> submit(Callable<T> callable) {
+  @Override @Nonnull
+  public <T> Future<T> submit(@Nonnull Callable<T> callable) {
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  public <T> Future<T> submit(Runnable runnable, T t) {
+  @Override @Nonnull
+  public <T> Future<T> submit(@Nonnull Runnable runnable, T t) {
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  public Future<?> submit(Runnable runnable) {
+  @Override @Nonnull
+  public Future<?> submit(@Nonnull Runnable runnable) {
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> collection) throws InterruptedException {
+  @Override @Nonnull
+  public <T> List<Future<T>> invokeAll(@Nonnull Collection<? extends Callable<T>> collection) {
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> collection, long l, TimeUnit timeUnit) throws InterruptedException {
+  @Override @Nonnull
+  public <T> List<Future<T>> invokeAll(@Nonnull Collection<? extends Callable<T>> collection, long l, @Nonnull TimeUnit timeUnit) {
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  public <T> T invokeAny(Collection<? extends Callable<T>> collection) throws InterruptedException, ExecutionException {
+  @Override @Nonnull
+  public <T> T invokeAny(@Nonnull Collection<? extends Callable<T>> collection) {
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  public <T> T invokeAny(Collection<? extends Callable<T>> collection, long l, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
+  @Override @Nonnull
+  public <T> T invokeAny(@Nonnull Collection<? extends Callable<T>> collection, long l, @Nonnull TimeUnit timeUnit) {
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  public <V> ScheduledFuture<V> schedule(Callable<V> callable, long l, TimeUnit timeUnit) {
+  @Override @Nonnull
+  public <V> ScheduledFuture<V> schedule(@Nonnull Callable<V> callable, long l, @Nonnull TimeUnit timeUnit) {
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  public ScheduledFuture<?> scheduleAtFixedRate(Runnable runnable, long l, long l1, TimeUnit timeUnit) {
+  @Override @Nonnull
+  public ScheduledFuture<?> scheduleAtFixedRate(@Nonnull Runnable runnable, long l, long l1, @Nonnull TimeUnit timeUnit) {
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  public ScheduledFuture<?> scheduleWithFixedDelay(Runnable runnable, long l, long l1, TimeUnit timeUnit) {
+  @Override @Nonnull
+  public ScheduledFuture<?> scheduleWithFixedDelay(@Nonnull Runnable runnable, long l, long l1, @Nonnull TimeUnit timeUnit) {
     throw new UnsupportedOperationException();
   }
 
-  public static class SynchronousScheduledFuture implements ScheduledFuture {
+  static class SynchronousScheduledFuture implements ScheduledFuture {
 
-    private final Runnable run;
+    private final Runnable delegate;
     private final long delay;
     private boolean cancelled = false;
+    private boolean done = false;
 
     SynchronousScheduledFuture(Runnable run, long delay) {
-      this.run = run;
+      this.delegate = run;
       this.delay = delay;
     }
 
     @Override
-    public long getDelay(TimeUnit timeUnit) {
+    public long getDelay(@Nonnull TimeUnit timeUnit) {
       // TODO handle conversion units
       return delay;
-    }
-
-    @Override
-    public int compareTo(Delayed delayed) {
-      return Long.compare(delay, delayed.getDelay(TimeUnit.MILLISECONDS));
     }
 
     @Override
@@ -150,12 +144,22 @@ public class SynchronousExecutor implements ScheduledExecutorService {
 
     @Override
     public Object get() {
+      if (cancelled) {
+        return null;
+      }
+      delegate.run();
+      done = true;
+      return null;
+    }
+
+    @Override
+    public Object get(long l, @Nonnull TimeUnit timeUnit) {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    public Object get(long l, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
-      throw new UnsupportedOperationException();
+    public int compareTo(Delayed delayed) {
+      return Long.compare(delay, delayed.getDelay(TimeUnit.MILLISECONDS));
     }
   }
 }

@@ -2,7 +2,7 @@ package digital.upgrade.replication.raft;
 
 public class CallCountingClock implements Clock {
 
-  private Time time = new Time(0);
+  private Time time = Time.fromEpochMillis(0);
 
   @Override
   public Time currentTime() {

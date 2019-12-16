@@ -6,8 +6,7 @@ import org.testng.annotations.Test;
 
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import digital.upgrade.replication.CommitHandler;
 import digital.upgrade.replication.Model.CommitMessage;
@@ -21,8 +20,9 @@ public class CommitWriterTest {
 
   @Test
   public void testApplyFirstEntry() {
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+
     Clock clock = new CallCountingClock();
+    ScheduledExecutorService executor = new SynchronousExecutor(clock);
     InMemoryCommitHandler handler = new InMemoryCommitHandler(clock);
     RaftReplicator replicator = runningReplicator(clock, executor, handler);
     replicator.append(AppendRequest.newBuilder()
@@ -38,16 +38,16 @@ public class CommitWriterTest {
                 .build().toByteString()))
         .build());
     assertEquals(replicator.getCommittedIndex(), new CommitIndex(0, 1));
-    Map<Long, CommitMessage> commits = handler.getCommits();
+    Map<Time, CommitMessage> commits = handler.getCommits();
     assertEquals(replicator.getAppliedIndex(), replicator.getCommittedIndex());
     assertEquals(commits.size(), 1);
-    assertEquals(commits.get(1L), CommitMessage.newBuilder()
+    assertEquals(commits.get(Time.fromEpochMillis(1L)), CommitMessage.newBuilder()
         .setScope("world")
         .setData(ByteString.copyFrom("hello", Charsets.UTF_8))
         .build());
   }
 
-  private RaftReplicator runningReplicator(Clock clock, ExecutorService executor, CommitHandler commitHandler) {
+  private RaftReplicator runningReplicator(Clock clock, ScheduledExecutorService executor, CommitHandler commitHandler) {
     InMemoryStateManager stateManager = new InMemoryStateManager(clock);
     RaftReplicator replicator = RaftReplicator.newBuilder()
         .setExecutor(executor)

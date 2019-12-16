@@ -93,7 +93,7 @@ public class MessageTransportTest {
         .setStateManager(stateManager)
         .setCommitHandler(commitHandler)
         .setTransport(transport)
-        .setExecutor(new SynchronousExecutor())
+        .setExecutor(new SynchronousExecutor(clock))
         .build();
     replicator.startup();
     return replicator;

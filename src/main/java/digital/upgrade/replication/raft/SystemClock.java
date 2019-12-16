@@ -7,6 +7,6 @@ public final class SystemClock implements Clock {
 
   @Override
   public Time currentTime() {
-    return new Time(java.time.Clock.systemUTC().millis());
+    return Time.fromEpochMillis(java.time.Clock.systemUTC().millis());
   }
 }

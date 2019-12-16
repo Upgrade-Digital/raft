@@ -48,7 +48,7 @@ public class RaftReplicatorStateTest {
         .setClockSource(clock)
         .setStateManager(stateManager)
         .setCommitHandler(commitHandler)
-        .setExecutor(new SynchronousExecutor())
+        .setExecutor(new SynchronousExecutor(clock))
         .build();
     replicator.startup();
 
@@ -58,10 +58,10 @@ public class RaftReplicatorStateTest {
         .build();
     CommitState result = replicator.commit(message);
     assertNotNull(result);
-    Map<Long, CommitMessage> commits = commitHandler.getCommits();
-    assertEquals(stateManager.getLastWriteTime(), 0L, "Expected creating state to be first clock");
+    Map<Time, CommitMessage> commits = commitHandler.getCommits();
+    assertEquals(stateManager.getLastWriteTime().toEpochMillis(), 0L, "Expected creating state to be first clock");
     assertEquals(commits.size(), 1, "Expected 1 commit");
-    assertEquals(commits.get(1L), message, "Expected message to be at time 1");
+    assertEquals(commits.get(Time.fromEpochMillis(1L)), message, "Expected message to be at time 1");
     assertEquals(result.getTime(), 2, "Commit should be created after handler write");
   }
 
@@ -91,7 +91,7 @@ public class RaftReplicatorStateTest {
         .setClockSource(clock)
         .setStateManager(stateManager)
         .setCommitHandler(commitHandler)
-        .setExecutor(new SynchronousExecutor())
+        .setExecutor(new SynchronousExecutor(clock))
         .setSelf(Peer.newBuilder()
             .setUuid(UUID.randomUUID().toString())
             .build())

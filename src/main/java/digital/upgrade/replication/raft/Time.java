@@ -11,12 +11,16 @@ class Time implements Comparable<Time> {
 
   private final Instant at;
 
-  Time(long time) {
+  private Time(long time) {
     at = Instant.ofEpochMilli(time);
   }
 
   Time(Instant instant) {
     at = instant;
+  }
+
+  static Time fromEpochMillis(long epochMillis) {
+    return new Time(epochMillis);
   }
 
   boolean isOverdue(Clock clock) {
