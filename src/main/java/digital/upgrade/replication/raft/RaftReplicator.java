@@ -196,6 +196,7 @@ public final class RaftReplicator implements CommitReplicator,
     CommitIndex leaderIndex = new CommitIndex(request.getLeaderIndex());
     if (leaderIndex.greaterThan(committed)) {
       committed = leaderIndex;
+      convertToFollower();
     }
     LOG.debug("Append success: committed {} log entries", request.getEntriesCount());
     lastUpdatedTime = clock.currentTime();
@@ -286,6 +287,11 @@ public final class RaftReplicator implements CommitReplicator,
   void convertToCandidate() {
     state = InstanceState.CANDIDATE;
     controller = new CandidateController();
+  }
+
+  private void convertToFollower() {
+    state = InstanceState.FOLLOWER;
+    controller = new FollowerController(this, executor, clock);
   }
 
   Time getLastAppendTime() {
