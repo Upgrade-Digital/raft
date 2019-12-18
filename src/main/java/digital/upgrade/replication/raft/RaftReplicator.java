@@ -193,9 +193,8 @@ public final class RaftReplicator implements CommitReplicator,
       stateManager.writeCommit(commit);
       committed = new CommitIndex(commit.getCommit());
     }
-    CommitIndex leaderIndex = new CommitIndex(request.getLeaderIndex());
-    if (leaderIndex.greaterThan(committed)) {
-      committed = leaderIndex;
+    if (request.getLeaderTerm().getNumber() > currentTerm.getNumber()) {
+      currentTerm = request.getLeaderTerm();
       convertToFollower();
     }
     LOG.debug("Append success: committed {} log entries", request.getEntriesCount());
