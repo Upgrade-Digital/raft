@@ -195,6 +195,7 @@ public final class RaftReplicator implements CommitReplicator,
     }
     if (request.getLeaderTerm().getNumber() > currentTerm.getNumber()) {
       currentTerm = request.getLeaderTerm();
+      leader = request.getLeader();
       convertToFollower();
     }
     LOG.debug("Append success: committed {} log entries", request.getEntriesCount());
