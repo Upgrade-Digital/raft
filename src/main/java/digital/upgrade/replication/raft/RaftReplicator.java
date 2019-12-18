@@ -286,6 +286,11 @@ public final class RaftReplicator implements CommitReplicator,
 
   void convertToCandidate() {
     state = InstanceState.CANDIDATE;
+    long nextTerm = currentTerm.getNumber() + 1;
+    currentTerm = Term.newBuilder()
+        .setNumber(nextTerm)
+        .build();
+
     controller = new CandidateController();
   }
 

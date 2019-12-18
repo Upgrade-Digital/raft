@@ -1,5 +1,6 @@
 package digital.upgrade.replication.raft;
 
+import com.google.common.base.Charsets;
 import com.google.protobuf.ByteString;
 
 import digital.upgrade.replication.CommitState;
@@ -54,15 +55,15 @@ public class RaftReplicatorStateTest {
 
     CommitMessage message = CommitMessage.newBuilder()
         .setScope("a")
-        .setData(ByteString.EMPTY)
+        .setData(ByteString.copyFrom("ST3PH", Charsets.UTF_8))
         .build();
     CommitState result = replicator.commit(message);
     assertNotNull(result);
     Map<Time, CommitMessage> commits = commitHandler.getCommits();
-    assertEquals(stateManager.getLastWriteTime().toEpochMillis(), 0L, "Expected creating state to be first clock");
+    assertEquals(stateManager.getLastWriteTime().toEpochMillis(), 1L, "Expected creating state to be first clock");
     assertEquals(commits.size(), 1, "Expected 1 commit");
     assertEquals(commits.get(Time.fromEpochMillis(1L)), message, "Expected message to be at time 1");
-    assertEquals(result.getTime(), 2, "Commit should be created after handler write");
+    assertEquals(result.getTime(), 1, "Commit should be created after handler write");
   }
 
   @Test
