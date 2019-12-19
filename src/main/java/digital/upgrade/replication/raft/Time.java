@@ -15,7 +15,7 @@ class Time implements Comparable<Time> {
     at = Instant.ofEpochMilli(time);
   }
 
-  Time(Instant instant) {
+  private Time(Instant instant) {
     at = instant;
   }
 

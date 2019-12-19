@@ -286,12 +286,8 @@ public final class RaftReplicator implements CommitReplicator,
 
   void convertToCandidate() {
     state = InstanceState.CANDIDATE;
-    long nextTerm = currentTerm.getNumber() + 1;
-    currentTerm = Term.newBuilder()
-        .setNumber(nextTerm)
-        .build();
-
-    controller = new CandidateController();
+    controller = new CandidateController(this, executor, clock);
+    executor.execute(controller);
   }
 
   private void convertToFollower() {
@@ -301,6 +297,19 @@ public final class RaftReplicator implements CommitReplicator,
 
   Time getLastAppendTime() {
     return lastUpdatedTime;
+  }
+
+  /**
+   * Increment the term of the replicator and return the prior value as a convenience.
+   * @return prior term
+   */
+  Term incrementTerm() {
+    Term prior = currentTerm;
+    long nextTerm = currentTerm.getNumber() + 1;
+    currentTerm = Term.newBuilder()
+        .setNumber(nextTerm)
+        .build();
+    return prior;
   }
 
   /**

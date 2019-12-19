@@ -1,5 +1,7 @@
 package digital.upgrade.replication.raft;
 
+import java.util.Collection;
+
 import digital.upgrade.replication.raft.Raft.AppendRequest;
 import digital.upgrade.replication.raft.Raft.AppendResult;
 import digital.upgrade.replication.raft.Raft.Peer;
@@ -42,4 +44,11 @@ interface MessageTransport {
    * @return the append result sent by the peer
    */
   AppendResult sendAppend(Peer peer, AppendRequest request);
+
+  /**
+   * Get the collection of known peers of the local instance.
+   *
+   * @return a collection of peers
+   */
+  Collection<Peer> peers();
 }

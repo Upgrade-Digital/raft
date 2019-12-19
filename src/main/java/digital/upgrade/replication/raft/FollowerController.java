@@ -19,7 +19,7 @@ public class FollowerController implements Controller {
   private final Clock clock;
   private long timeout = DEFAULT_TIMEOUT;
 
-  public FollowerController(RaftReplicator replicator, ScheduledExecutorService executor, Clock clock) {
+  FollowerController(RaftReplicator replicator, ScheduledExecutorService executor, Clock clock) {
     this.replicator = replicator;
     this.executor = executor;
     this.clock = clock;
