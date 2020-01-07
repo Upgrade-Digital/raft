@@ -1,12 +1,5 @@
 package digital.upgrade.replication.raft;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.concurrent.ScheduledExecutorService;
-
 import digital.upgrade.replication.CommitHandler;
 import digital.upgrade.replication.CommitReplicator;
 import digital.upgrade.replication.CommitState;
@@ -18,6 +11,13 @@ import digital.upgrade.replication.raft.Raft.Term;
 import digital.upgrade.replication.raft.Raft.VoteRequest;
 import digital.upgrade.replication.raft.Raft.VoteResult;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.concurrent.ScheduledExecutorService;
+
 import static digital.upgrade.replication.Model.CommitMessage;
 import static digital.upgrade.replication.raft.Raft.Peer;
 import static digital.upgrade.replication.raft.Raft.PersistentState;
@@ -27,7 +27,7 @@ import static digital.upgrade.replication.raft.Raft.PersistentState;
  * leader which coordinates commits from clients.
  */
 public final class RaftReplicator implements CommitReplicator,
-    RequestVoteListener, AppendEntryListener, Closeable {
+    AppendEntryHandler, RequestVoteHandler, Closeable {
 
   private static final Logger LOG = LoggerFactory.getLogger(RaftReplicator.class);
 
@@ -172,12 +172,37 @@ public final class RaftReplicator implements CommitReplicator,
   }
 
   /**
+   * Handle a vote request from the transport synchronously.
+   *
+   * The transport for this replicator will use this method to request a vote
+   * from a peer which will be returned to them accordingly.
+   *
+   * @param voteRequest to consider for voting from a candidate
+   * @return VoteResult with vote granted true if vote granted.
+   */
+  public VoteResult handleVoteRequest(VoteRequest voteRequest) {
+    CommitIndex candidateIndex = new CommitIndex(voteRequest.getLastLogIndex());
+    if (null == votedFor ||
+        (votedFor.equals(voteRequest.getCandidate()) && candidateIndex.greaterThanEqual(getCommittedIndex()))) {
+      votedFor = voteRequest.getCandidate();
+      return VoteResult.newBuilder()
+          .setVoteGranted(true)
+          .setVoterTerm(getCurrentTerm())
+          .build();
+    }
+    return VoteResult.newBuilder()
+        .setVoteGranted(false)
+        .setVoterTerm(getCurrentTerm())
+        .build();
+  }
+
+  /**
    * Handle requests to append entries to the underlying handler.
    *
    * @param request to process
    * @return append result which will be returned to the caller
    */
-  public AppendResult append(AppendRequest request) {
+  public AppendResult handleAppend(AppendRequest request) {
     if (request.getLeaderTerm().getNumber() < getCurrentTerm().getNumber()) {
       LOG.debug("Append failure: request leader term < current term");
       return failureResponse();
@@ -244,29 +269,6 @@ public final class RaftReplicator implements CommitReplicator,
         .build();
   }
 
-  /**
-   * Handle a vote request and return vote if not already voted in this term and the index and term are up to date.
-   *
-   * @param voteRequest to consider for voting from a candidate
-   * @return VoteResult with vote granted true if vote granted.
-   */
-  @Override
-  public VoteResult requestVote(VoteRequest voteRequest) {
-    CommitIndex candidateIndex = new CommitIndex(voteRequest.getLastLogIndex());
-    if (null == votedFor ||
-        (votedFor.equals(voteRequest.getCandidate()) && candidateIndex.greaterThanEqual(getCommittedIndex()))) {
-        votedFor = voteRequest.getCandidate();
-        return VoteResult.newBuilder()
-            .setVoteGranted(true)
-            .setVoterTerm(getCurrentTerm())
-            .build();
-    }
-    return VoteResult.newBuilder()
-        .setVoteGranted(false)
-        .setVoterTerm(getCurrentTerm())
-        .build();
-  }
-
   Peer getSelf() {
     return self;
   }
@@ -286,7 +288,7 @@ public final class RaftReplicator implements CommitReplicator,
 
   void convertToCandidate() {
     state = InstanceState.CANDIDATE;
-    controller = new CandidateController(this, executor, clock);
+    controller = new CandidateController(this, executor, clock, transport);
     executor.execute(controller);
   }
 
@@ -344,8 +346,8 @@ public final class RaftReplicator implements CommitReplicator,
 
     Builder setTransport(MessageTransport transport) {
       result.transport = transport;
-      transport.setAppendListener(result);
-      transport.setVoteListener(result);
+      transport.setAppendHandler(result);
+      transport.setVoteHandler(result);
       return this;
     }
 

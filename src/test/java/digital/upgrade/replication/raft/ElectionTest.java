@@ -19,7 +19,7 @@ public class ElectionTest {
     Term nextTerm = nextTerm(replicator);
     Peer otherPeer = randomPeer();
     assertEquals(replicator.getState(), InstanceState.LEADER);
-    replicator.append(AppendRequest.newBuilder()
+    replicator.handleAppend(AppendRequest.newBuilder()
         .setLeader(otherPeer)
         .setLeaderTerm(nextTerm)
         .setLeaderIndex(replicator.getCommittedIndex().indexValue())

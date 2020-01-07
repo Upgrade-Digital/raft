@@ -14,21 +14,21 @@ public class InMemoryTransport implements MessageTransport {
   private Map<Peer, RaftReplicator> peers = new HashMap<>();
 
   @Override
-  public void setVoteListener(RequestVoteListener listener) {
+  public void setVoteHandler(RequestVoteResponseListener listener) {
   }
 
   @Override
   public VoteResult sendRequestVote(Peer peer, VoteRequest request) {
-    return peers.get(peer).requestVote(request);
+    return peers.get(peer).handleVoteRequest(request);
   }
 
   @Override
-  public void setAppendListener(AppendEntryListener listener) {
+  public void setAppendHandler(AppendEntryHandler listener) {
   }
 
   @Override
   public AppendResult sendAppend(Peer peer, AppendRequest request) {
-    return peers.get(peer).append(request);
+    return peers.get(peer).handleAppend(request);
   }
 
   void addPeer(Peer peer, RaftReplicator replicator) {

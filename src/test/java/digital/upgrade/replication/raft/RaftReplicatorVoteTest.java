@@ -24,7 +24,7 @@ public class RaftReplicatorVoteTest {
   @Test
   public void testVoteRequestReturnsNonNull() {
     RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
-    VoteResult result = replicator.requestVote(VoteRequest.newBuilder()
+    VoteResult result = replicator.handleVoteRequest(VoteRequest.newBuilder()
         .setCandidateTerm(Term.newBuilder()
             .setNumber(0)
             .build())
@@ -40,7 +40,7 @@ public class RaftReplicatorVoteTest {
   @Test
   public void testVoteTrueNoPrior() {
     RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
-    VoteResult result = replicator.requestVote(VoteRequest.newBuilder()
+    VoteResult result = replicator.handleVoteRequest(VoteRequest.newBuilder()
         .setCandidateTerm(Term.newBuilder()
             .setNumber(1)
             .build())
@@ -66,15 +66,15 @@ public class RaftReplicatorVoteTest {
         .setLastLogIndex(FIRST_LOG_INDEX)
         .setLastLogTerm(FIRST_TERM)
         .build();
-    replicator.requestVote(request);
-    VoteResult result = replicator.requestVote(request);
+    replicator.handleVoteRequest(request);
+    VoteResult result = replicator.handleVoteRequest(request);
     assertTrue(result.getVoteGranted());
   }
 
   @Test
   public void testFalseAlreadyVoted() {
     RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
-    replicator.requestVote(VoteRequest.newBuilder()
+    replicator.handleVoteRequest(VoteRequest.newBuilder()
         .setCandidateTerm(Term.newBuilder()
             .setNumber(1)
             .build())
@@ -84,7 +84,7 @@ public class RaftReplicatorVoteTest {
         .setLastLogIndex(FIRST_LOG_INDEX)
         .setLastLogTerm(FIRST_TERM)
         .build());
-    VoteResult result = replicator.requestVote(VoteRequest.newBuilder()
+    VoteResult result = replicator.handleVoteRequest(VoteRequest.newBuilder()
         .setCandidateTerm(Term.newBuilder()
             .setNumber(2)
             .build())

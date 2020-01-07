@@ -1,13 +1,14 @@
 package digital.upgrade.replication.raft;
 
-import java.time.Duration;
-import java.util.concurrent.ScheduledExecutorService;
-
 import digital.upgrade.replication.raft.Raft.Peer;
 import digital.upgrade.replication.raft.Raft.Term;
 import digital.upgrade.replication.raft.Raft.VoteRequest;
+import digital.upgrade.replication.raft.Raft.VoteResult;
 
-public class CandidateController implements Controller, RequestVoteListener {
+import java.time.Duration;
+import java.util.concurrent.ScheduledExecutorService;
+
+public class CandidateController implements Controller, RequestVoteResponseListener {
 
   private static final Duration ELECTION_TIMEOUT = Duration.ofMillis(100);
 
@@ -17,8 +18,9 @@ public class CandidateController implements Controller, RequestVoteListener {
   private final MessageTransport transport;
   private Time electionTimeout;
 
-  CandidateController(RaftReplicator replicator, ScheduledExecutorService executor, Clock clock,
-                      MessageTransport transport) {
+  CandidateController(RaftReplicator replicator,
+      ScheduledExecutorService executor, Clock clock,
+      MessageTransport transport) {
     this.replicator = replicator;
     this.executor = executor;
     this.clock = clock;
@@ -27,13 +29,13 @@ public class CandidateController implements Controller, RequestVoteListener {
 
   @Override
   public void run() {
-    Term lastTerm = replicator.incrementTerm();
-    replicator.requestVote(voteRequest(lastTerm));
+    Term nextTerm = replicator.incrementTerm();
+    replicator.handleVoteRequest(voteRequest(nextTerm));
     electionTimeout = clock.currentTime().plus(ELECTION_TIMEOUT);
-    transport.setVoteListener(this);
+    transport.setVoteHandler(this);
     for (Peer peer : transport.peers()) {
       // TODO refactor the vote request callback to pass any successful vote responses to the controller.
-      transport.sendRequestVote(peer, voteRequest(lastTerm));
+      transport.sendRequestVote(peer, voteRequest(nextTerm), this);
     }
   }
 
@@ -44,5 +46,10 @@ public class CandidateController implements Controller, RequestVoteListener {
         .setLastLogTerm(lastTerm)
         .setLastLogIndex(replicator.getCommittedIndex().indexValue())
         .build();
+  }
+
+  @Override
+  public void handleResponse(VoteRequest voteRequest, VoteResult voteResult) {
+
   }
 }

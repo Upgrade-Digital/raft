@@ -3,7 +3,7 @@ package digital.upgrade.replication.raft;
 import digital.upgrade.replication.raft.Raft.AppendRequest;
 import digital.upgrade.replication.raft.Raft.AppendResult;
 
-interface AppendEntryListener {
+interface AppendEntryHandler {
 
   /**
    * Listener to handle append entry requests.
@@ -11,5 +11,5 @@ interface AppendEntryListener {
    * @param request to process including new log entries and heartbeat
    * @return append result
    */
-  AppendResult append(AppendRequest request);
+  AppendResult handleAppend(AppendRequest request);
 }

@@ -25,7 +25,7 @@ public class CommitWriterTest {
     ScheduledExecutorService executor = new SynchronousExecutor(clock);
     InMemoryCommitHandler handler = new InMemoryCommitHandler(clock);
     RaftReplicator replicator = runningReplicator(clock, executor, handler);
-    replicator.append(AppendRequest.newBuilder()
+    replicator.handleAppend(AppendRequest.newBuilder()
         .setLeaderIndex(replicator.getCommittedIndex().indexValue())
         .setLeaderTerm(replicator.getCurrentTerm())
         .setLeader(replicator.getSelf())

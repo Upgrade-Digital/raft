@@ -64,7 +64,7 @@ public final class RaftReplicatorAppendTest {
   @Test
   public void testAppendReturnsResult() {
     RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
-    AppendResult result = replicator.append(zeroRequest().build());
+    AppendResult result = replicator.handleAppend(zeroRequest().build());
     assertNotNull(result);
   }
 
@@ -72,7 +72,7 @@ public final class RaftReplicatorAppendTest {
   public void testReturnsFalseIfTermLessCurrentTerm() {
     RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
     Term current = replicator.getCurrentTerm();
-    AppendResult result = replicator.append(zeroRequest()
+    AppendResult result = replicator.handleAppend(zeroRequest()
         .setLeaderTerm(replicator.getCurrentTerm()
             .toBuilder()
             .setNumber(current.getNumber() - 1))
@@ -83,7 +83,7 @@ public final class RaftReplicatorAppendTest {
   @Test
   public void testReturnTrueIfTermEqualCurrentTerm() {
     RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
-    AppendResult result = replicator.append(zeroRequest()
+    AppendResult result = replicator.handleAppend(zeroRequest()
         .setLeaderTerm(replicator.getCurrentTerm())
         .build());
     assertTrue(result.getSuccess());
@@ -93,7 +93,7 @@ public final class RaftReplicatorAppendTest {
   public void testReturnFalseIfPreviousLogTermMismatch() {
     RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
     CommitIndex previousIndex = zeroIndex();
-    AppendResult result = replicator.append(zeroRequest()
+    AppendResult result = replicator.handleAppend(zeroRequest()
         .addEntries(newEntry(replicator, previousIndex))
         .setLeaderTerm(replicator.getCurrentTerm())
         .build());
@@ -102,7 +102,7 @@ public final class RaftReplicatorAppendTest {
     Term wrongTerm = Term.newBuilder()
         .setNumber(999)
         .build();
-    result = replicator.append(zeroRequest()
+    result = replicator.handleAppend(zeroRequest()
         .addEntries(newEntry(replicator, nextIndex))
         .setLeaderTerm(replicator.getCurrentTerm())
         .setPreviousIndex(previousIndex.indexValue())
@@ -114,10 +114,10 @@ public final class RaftReplicatorAppendTest {
   @Test
   public void testOnConflictingTermDeleteEntryAndAllFollowing() {
     RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
-    replicator.append(zeroRequest()
+    replicator.handleAppend(zeroRequest()
         .addAllEntries(Arrays.asList(SINGLE_TERM_ENTRIES))
         .build());
-    replicator.append(zeroRequest()
+    replicator.handleAppend(zeroRequest()
         .setPreviousTerm(replicator.getCurrentTerm())
         .setPreviousIndex(Index.newBuilder()
             .setMostSignificant(0)
