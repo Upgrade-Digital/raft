@@ -10,7 +10,6 @@ import digital.upgrade.replication.raft.Raft.VoteResult;
 
 import java.time.Duration;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -71,9 +70,13 @@ public class CandidateController implements Controller, RequestVoteResponseListe
   }
 
   @Override
-  public void handleResponse(VoteRequest voteRequest, VoteResult voteResult) {
+  public void handleResponse(Peer peer, VoteRequest voteRequest, VoteResult voteResult) {
     if (voteResult.getVoteGranted()) {
+      LOG.debug("Peer {} granted vote in term {}", peer, voteRequest.getCandidateTerm());
       votes.countDown();
+    } else {
+      LOG.debug("Peer {} rejected vote for {} in term {}", peer, voteRequest.getCandidate(),
+          voteResult.getVoterTerm());
     }
   }
 }
