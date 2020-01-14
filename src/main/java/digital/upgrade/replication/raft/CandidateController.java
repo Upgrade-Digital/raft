@@ -54,7 +54,7 @@ public class CandidateController implements Controller, RequestVoteResponseListe
       LOG.info("Candidate election interrupted");
       winner = false;
     }
-    if (winner || votes.getCount() < (peerCount / 2)) {
+    if (winner || votes.getCount() <= (peerCount / 2)) {
       replicator.convertToLeader();
     } else {
       replicator.convertToCandidate();
