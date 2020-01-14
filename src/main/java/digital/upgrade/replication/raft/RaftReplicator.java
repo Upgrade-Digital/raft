@@ -286,6 +286,10 @@ public final class RaftReplicator implements CommitReplicator,
     executor.shutdown();
   }
 
+  void convertToLeader() {
+    // TODO candidate election won start leader controller
+  }
+
   void convertToCandidate() {
     state = InstanceState.CANDIDATE;
     controller = new CandidateController(this, executor, clock, transport);
