@@ -181,6 +181,7 @@ public final class RaftReplicator implements CommitReplicator,
    * @return VoteResult with vote granted true if vote granted.
    */
   public VoteResult handleVoteRequest(VoteRequest voteRequest) {
+    // TODO migrate the vote request logic to the delegated controller
     CommitIndex candidateIndex = new CommitIndex(voteRequest.getLastLogIndex());
     if (null == votedFor ||
         (votedFor.equals(voteRequest.getCandidate()) && candidateIndex.greaterThanEqual(getCommittedIndex()))) {
@@ -203,6 +204,7 @@ public final class RaftReplicator implements CommitReplicator,
    * @return append result which will be returned to the caller
    */
   public AppendResult handleAppend(AppendRequest request) {
+    // TODO Migrate the append handler logic to the controller delegate
     if (request.getLeaderTerm().getNumber() < getCurrentTerm().getNumber()) {
       LOG.debug("Append failure: request leader term < current term");
       return failureResponse();
@@ -352,8 +354,6 @@ public final class RaftReplicator implements CommitReplicator,
 
     Builder setTransport(MessageTransport transport) {
       result.transport = transport;
-      transport.setAppendHandler(result);
-      transport.setVoteHandler(result);
       return this;
     }
 

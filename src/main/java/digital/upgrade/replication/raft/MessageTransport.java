@@ -1,7 +1,6 @@
 package digital.upgrade.replication.raft;
 
 import digital.upgrade.replication.raft.Raft.AppendRequest;
-import digital.upgrade.replication.raft.Raft.AppendResult;
 import digital.upgrade.replication.raft.Raft.Peer;
 import digital.upgrade.replication.raft.Raft.VoteRequest;
 
@@ -11,13 +10,6 @@ import java.util.Collection;
  * Functionality to allow sending messages between Raft instances.
  */
 interface MessageTransport {
-
-  /**
-   * Set the append listener for callbacks from the transport to handle append entry requests.
-   *
-   * @param listener to route append entry requests to.
-   */
-  void setAppendHandler(AppendEntryHandler listener);
 
   /**
    * Send a request vote message to a peer
@@ -35,7 +27,7 @@ interface MessageTransport {
    * @param request to send to the peer
    * @return the append result sent by the peer
    */
-  AppendResult sendAppend(Peer peer, AppendRequest request);
+  void sendAppend(Peer peer, AppendRequest request, AppendResponseListener listener);
 
   /**
    * Get the collection of known peers of the local instance.
