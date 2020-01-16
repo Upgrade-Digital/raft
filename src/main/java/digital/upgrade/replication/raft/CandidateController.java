@@ -32,7 +32,6 @@ public class CandidateController implements Controller, RequestVoteResponseListe
     Term nextTerm = replicator.incrementTerm();
     replicator.handleVoteRequest(voteRequest(nextTerm));
     electionTimeout = clock.currentTime().plus(ELECTION_TIMEOUT);
-    transport.setVoteHandler(this);
     for (Peer peer : transport.peers()) {
       // TODO refactor the vote request callback to pass any successful vote responses to the controller.
       transport.sendRequestVote(peer, voteRequest(nextTerm), this);

@@ -13,13 +13,6 @@ import java.util.Collection;
 interface MessageTransport {
 
   /**
-   * Set the vote handler which the transport uses to handle votes.
-   *
-   * @param handler to callback with request vote messages from peers
-   */
-  void setVoteHandler(RequestVoteHandler handler);
-
-  /**
    * Set the append listener for callbacks from the transport to handle append entry requests.
    *
    * @param listener to route append entry requests to.
