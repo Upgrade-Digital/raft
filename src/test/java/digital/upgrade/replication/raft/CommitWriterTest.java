@@ -1,5 +1,11 @@
 package digital.upgrade.replication.raft;
 
+import digital.upgrade.replication.CommitHandler;
+import digital.upgrade.replication.Model.CommitMessage;
+import digital.upgrade.replication.raft.Raft.AppendRequest;
+import digital.upgrade.replication.raft.Raft.Entry;
+import digital.upgrade.replication.raft.Raft.Peer;
+
 import com.google.common.base.Charsets;
 import com.google.protobuf.ByteString;
 import org.testng.annotations.Test;
@@ -7,12 +13,6 @@ import org.testng.annotations.Test;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
-
-import digital.upgrade.replication.CommitHandler;
-import digital.upgrade.replication.Model.CommitMessage;
-import digital.upgrade.replication.raft.Raft.AppendRequest;
-import digital.upgrade.replication.raft.Raft.Entry;
-import digital.upgrade.replication.raft.Raft.Peer;
 
 import static org.testng.Assert.assertEquals;
 
@@ -25,7 +25,7 @@ public class CommitWriterTest {
     ScheduledExecutorService executor = new SynchronousExecutor(clock);
     InMemoryCommitHandler handler = new InMemoryCommitHandler(clock);
     RaftReplicator replicator = runningReplicator(clock, executor, handler);
-    replicator.handleAppend(AppendRequest.newBuilder()
+    replicator.getController().handleAppend(AppendRequest.newBuilder()
         .setLeaderIndex(replicator.getCommittedIndex().indexValue())
         .setLeaderTerm(replicator.getCurrentTerm())
         .setLeader(replicator.getSelf())
