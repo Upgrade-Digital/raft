@@ -1,18 +1,18 @@
 package digital.upgrade.replication.raft;
 
-import com.google.protobuf.ByteString;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import java.nio.charset.StandardCharsets;
-import java.util.UUID;
-
 import digital.upgrade.replication.raft.Raft.AppendRequest;
 import digital.upgrade.replication.raft.Raft.Entry;
 import digital.upgrade.replication.raft.Raft.Index;
 import digital.upgrade.replication.raft.Raft.Peer;
 import digital.upgrade.replication.raft.Raft.Term;
 import digital.upgrade.replication.raft.Raft.VoteRequest;
+
+import com.google.protobuf.ByteString;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -62,7 +62,7 @@ public class MessageTransportTest {
         .setLastLogTerm(FIRST_LOG_TERM)
         .setCandidate(NARUTO)
         .setCandidateTerm(FIRST_LOG_TERM)
-        .build());
+        .build(), new FakeVoteListener());
     assertTrue(sasuke.hasVotedInTerm());
     assertEquals(sasuke.getVoteCast(), NARUTO);
   }
@@ -79,7 +79,8 @@ public class MessageTransportTest {
             .setCommand(ByteString.copyFrom("Sakura", StandardCharsets.UTF_8)))
         .setPreviousTerm(FIRST_LOG_TERM)
         .setLeaderIndex(FIRST_LOG_INDEX)
-        .build());
+        .build(),
+        new FakeAppendListener());
     assertEquals(sasuke.getAppliedIndex(), new CommitIndex(FIRST_LOG_INDEX));
   }
 
