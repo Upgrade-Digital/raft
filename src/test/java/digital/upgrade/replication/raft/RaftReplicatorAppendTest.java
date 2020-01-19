@@ -64,7 +64,7 @@ public final class RaftReplicatorAppendTest {
   @Test
   public void testAppendReturnsResult() {
     RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
-    AppendResult result = replicator.handleAppend(zeroRequest().build());
+    AppendResult result = replicator.getController().handleAppend(zeroRequest().build());
     assertNotNull(result);
   }
 
@@ -72,7 +72,7 @@ public final class RaftReplicatorAppendTest {
   public void testReturnsFalseIfTermLessCurrentTerm() {
     RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
     Term current = replicator.getCurrentTerm();
-    AppendResult result = replicator.handleAppend(zeroRequest()
+    AppendResult result = replicator.getController().handleAppend(zeroRequest()
         .setLeaderTerm(replicator.getCurrentTerm()
             .toBuilder()
             .setNumber(current.getNumber() - 1))
@@ -83,7 +83,7 @@ public final class RaftReplicatorAppendTest {
   @Test
   public void testReturnTrueIfTermEqualCurrentTerm() {
     RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
-    AppendResult result = replicator.handleAppend(zeroRequest()
+    AppendResult result = replicator.getController().handleAppend(zeroRequest()
         .setLeaderTerm(replicator.getCurrentTerm())
         .build());
     assertTrue(result.getSuccess());
@@ -93,7 +93,7 @@ public final class RaftReplicatorAppendTest {
   public void testReturnFalseIfPreviousLogTermMismatch() {
     RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
     CommitIndex previousIndex = zeroIndex();
-    AppendResult result = replicator.handleAppend(zeroRequest()
+    AppendResult result = replicator.getController().handleAppend(zeroRequest()
         .addEntries(newEntry(replicator, previousIndex))
         .setLeaderTerm(replicator.getCurrentTerm())
         .build());
@@ -102,7 +102,7 @@ public final class RaftReplicatorAppendTest {
     Term wrongTerm = Term.newBuilder()
         .setNumber(999)
         .build();
-    result = replicator.handleAppend(zeroRequest()
+    result = replicator.getController().handleAppend(zeroRequest()
         .addEntries(newEntry(replicator, nextIndex))
         .setLeaderTerm(replicator.getCurrentTerm())
         .setPreviousIndex(previousIndex.indexValue())
@@ -114,10 +114,11 @@ public final class RaftReplicatorAppendTest {
   @Test
   public void testOnConflictingTermDeleteEntryAndAllFollowing() {
     RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
-    replicator.handleAppend(zeroRequest()
+    // TODO Refactor controller access in order to avoid race conditions on controller references
+    replicator.getController().handleAppend(zeroRequest()
         .addAllEntries(Arrays.asList(SINGLE_TERM_ENTRIES))
         .build());
-    replicator.handleAppend(zeroRequest()
+    replicator.getController().handleAppend(zeroRequest()
         .setPreviousTerm(replicator.getCurrentTerm())
         .setPreviousIndex(Index.newBuilder()
             .setMostSignificant(0)
