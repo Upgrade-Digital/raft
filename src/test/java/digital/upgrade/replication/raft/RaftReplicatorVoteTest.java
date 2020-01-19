@@ -1,14 +1,14 @@
 package digital.upgrade.replication.raft;
 
-import org.testng.annotations.Test;
-
-import java.util.UUID;
-
 import digital.upgrade.replication.raft.Raft.Index;
 import digital.upgrade.replication.raft.Raft.Peer;
 import digital.upgrade.replication.raft.Raft.Term;
 import digital.upgrade.replication.raft.Raft.VoteRequest;
 import digital.upgrade.replication.raft.Raft.VoteResult;
+
+import org.testng.annotations.Test;
+
+import java.util.UUID;
 
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
@@ -24,7 +24,8 @@ public class RaftReplicatorVoteTest {
   @Test
   public void testVoteRequestReturnsNonNull() {
     RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
-    VoteResult result = replicator.handleVoteRequest(VoteRequest.newBuilder()
+    VoteResult result = replicator.getController()
+        .handleVoteRequest(VoteRequest.newBuilder()
         .setCandidateTerm(Term.newBuilder()
             .setNumber(0)
             .build())
@@ -40,7 +41,8 @@ public class RaftReplicatorVoteTest {
   @Test
   public void testVoteTrueNoPrior() {
     RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
-    VoteResult result = replicator.handleVoteRequest(VoteRequest.newBuilder()
+    VoteResult result = replicator.getController()
+        .handleVoteRequest(VoteRequest.newBuilder()
         .setCandidateTerm(Term.newBuilder()
             .setNumber(1)
             .build())
@@ -66,15 +68,17 @@ public class RaftReplicatorVoteTest {
         .setLastLogIndex(FIRST_LOG_INDEX)
         .setLastLogTerm(FIRST_TERM)
         .build();
-    replicator.handleVoteRequest(request);
-    VoteResult result = replicator.handleVoteRequest(request);
+    replicator.getController()
+        .handleVoteRequest(request);
+    VoteResult result = replicator.getController()
+        .handleVoteRequest(request);
     assertTrue(result.getVoteGranted());
   }
 
   @Test
   public void testFalseAlreadyVoted() {
     RaftReplicator replicator = RaftReplicatorStateTest.startedReplicator();
-    replicator.handleVoteRequest(VoteRequest.newBuilder()
+    replicator.getController().handleVoteRequest(VoteRequest.newBuilder()
         .setCandidateTerm(Term.newBuilder()
             .setNumber(1)
             .build())
@@ -84,7 +88,8 @@ public class RaftReplicatorVoteTest {
         .setLastLogIndex(FIRST_LOG_INDEX)
         .setLastLogTerm(FIRST_TERM)
         .build());
-    VoteResult result = replicator.handleVoteRequest(VoteRequest.newBuilder()
+    VoteResult result = replicator.getController()
+        .handleVoteRequest(VoteRequest.newBuilder()
         .setCandidateTerm(Term.newBuilder()
             .setNumber(2)
             .build())
