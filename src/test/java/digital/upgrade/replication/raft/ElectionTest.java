@@ -1,12 +1,12 @@
 package digital.upgrade.replication.raft;
 
-import org.testng.annotations.Test;
-
-import java.util.UUID;
-
 import digital.upgrade.replication.raft.Raft.AppendRequest;
 import digital.upgrade.replication.raft.Raft.Peer;
 import digital.upgrade.replication.raft.Raft.Term;
+
+import org.testng.annotations.Test;
+
+import java.util.UUID;
 
 import static org.testng.Assert.assertEquals;
 
@@ -19,7 +19,7 @@ public class ElectionTest {
     Term nextTerm = nextTerm(replicator);
     Peer otherPeer = randomPeer();
     assertEquals(replicator.getState(), InstanceState.LEADER);
-    replicator.handleAppend(AppendRequest.newBuilder()
+    replicator.getController().handleAppend(AppendRequest.newBuilder()
         .setLeader(otherPeer)
         .setLeaderTerm(nextTerm)
         .setLeaderIndex(replicator.getCommittedIndex().indexValue())

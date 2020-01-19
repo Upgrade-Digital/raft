@@ -1,6 +1,12 @@
 package digital.upgrade.replication.raft;
 
-import java.util.Objects;
+import digital.upgrade.replication.raft.Raft.AppendRequest;
+import digital.upgrade.replication.raft.Raft.AppendResult;
+import digital.upgrade.replication.raft.Raft.VoteRequest;
+import digital.upgrade.replication.raft.Raft.VoteResult;
+
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.util.concurrent.ScheduledExecutorService;
 
 public class LeaderController implements Controller {
@@ -21,5 +27,15 @@ public class LeaderController implements Controller {
   @Override
   public void run() {
     // TODO handle replication requests by shipping them to peers
+  }
+
+  @Override
+  public AppendResult handleAppend(AppendRequest request) {
+    throw new NotImplementedException();
+  }
+
+  @Override
+  public VoteResult handleVoteRequest(VoteRequest voteRequest) {
+    throw new NotImplementedException();
   }
 }

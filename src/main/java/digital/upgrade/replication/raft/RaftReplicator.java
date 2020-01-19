@@ -3,13 +3,9 @@ package digital.upgrade.replication.raft;
 import digital.upgrade.replication.CommitHandler;
 import digital.upgrade.replication.CommitReplicator;
 import digital.upgrade.replication.CommitState;
-import digital.upgrade.replication.raft.Raft.AppendRequest;
-import digital.upgrade.replication.raft.Raft.AppendResult;
 import digital.upgrade.replication.raft.Raft.Entry;
 import digital.upgrade.replication.raft.Raft.Index;
 import digital.upgrade.replication.raft.Raft.Term;
-import digital.upgrade.replication.raft.Raft.VoteRequest;
-import digital.upgrade.replication.raft.Raft.VoteResult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +22,7 @@ import static digital.upgrade.replication.raft.Raft.PersistentState;
  * Raft implementation of commit replicator which uses election to select a
  * leader which coordinates commits from clients.
  */
-public final class RaftReplicator implements CommitReplicator,
-    AppendEntryHandler, RequestVoteHandler, Closeable {
+public final class RaftReplicator implements CommitReplicator, Closeable {
 
   private static final Logger LOG = LoggerFactory.getLogger(RaftReplicator.class);
 
@@ -118,6 +113,17 @@ public final class RaftReplicator implements CommitReplicator,
   }
 
   /**
+   * Update the candidate who has been voted for in the current term.
+   *
+   * TODO Update the candidate vote when the term increases.
+   *
+   * @param candidate update the vote cast
+   */
+  void castVote(Peer candidate) {
+    votedFor = candidate;
+  }
+
+  /**
    * Return the highest commit index which is persisted for this instance.
    *
    * @return highest committed index.
@@ -171,106 +177,6 @@ public final class RaftReplicator implements CommitReplicator,
     return leader;
   }
 
-  /**
-   * Handle a vote request from the transport synchronously.
-   *
-   * The transport for this replicator will use this method to request a vote
-   * from a peer which will be returned to them accordingly.
-   *
-   * @param voteRequest to consider for voting from a candidate
-   * @return VoteResult with vote granted true if vote granted.
-   */
-  public VoteResult handleVoteRequest(VoteRequest voteRequest) {
-    // TODO migrate the vote request logic to the delegated controller
-    CommitIndex candidateIndex = new CommitIndex(voteRequest.getLastLogIndex());
-    if (null == votedFor ||
-        (votedFor.equals(voteRequest.getCandidate()) && candidateIndex.greaterThanEqual(getCommittedIndex()))) {
-      votedFor = voteRequest.getCandidate();
-      return VoteResult.newBuilder()
-          .setVoteGranted(true)
-          .setVoterTerm(getCurrentTerm())
-          .build();
-    }
-    return VoteResult.newBuilder()
-        .setVoteGranted(false)
-        .setVoterTerm(getCurrentTerm())
-        .build();
-  }
-
-  /**
-   * Handle requests to append entries to the underlying handler.
-   *
-   * @param request to process
-   * @return append result which will be returned to the caller
-   */
-  public AppendResult handleAppend(AppendRequest request) {
-    // TODO Migrate the append handler logic to the controller delegate
-    if (request.getLeaderTerm().getNumber() < getCurrentTerm().getNumber()) {
-      LOG.debug("Append failure: request leader term < current term");
-      return failureResponse();
-    }
-    if (lastIndexTermMismatch(request)) {
-      LOG.debug("Append failure: state not empty and last index term mismatched");
-      return failureResponse();
-    }
-    for (Entry commit : request.getEntriesList()) {
-      if (indexMismatch(commit)) {
-        removeFrom(commit.getCommit());
-      }
-      stateManager.writeCommit(commit);
-      committed = new CommitIndex(commit.getCommit());
-    }
-    if (request.getLeaderTerm().getNumber() > currentTerm.getNumber()) {
-      currentTerm = request.getLeaderTerm();
-      leader = request.getLeader();
-      convertToFollower();
-    }
-    LOG.debug("Append success: committed {} log entries", request.getEntriesCount());
-    lastUpdatedTime = clock.currentTime();
-    executor.execute(new CommitWriter(this, stateManager, commitHandler));
-    return AppendResult.newBuilder()
-        .setSuccess(true)
-        .setTerm(getCurrentTerm())
-        .build();
-  }
-
-  private void removeFrom(Index start) {
-    CommitIndex remove = new CommitIndex(start);
-    committed = remove.previousValue();
-    while (stateManager.hasCommit(remove.indexValue())) {
-      stateManager.removeCommit(remove.indexValue());
-      remove = remove.nextIndex();
-    }
-
-  }
-
-  private boolean indexMismatch(Entry commit) {
-    if (!stateManager.hasCommit(commit.getCommit())) {
-      return false;
-    }
-    Entry prior = stateManager.readCommit(commit.getCommit());
-    return !prior.getTerm().equals(commit.getTerm());
-  }
-
-  private boolean lastIndexTermMismatch(AppendRequest request) {
-    if (stateManager.isEmpty()) {
-      return false;
-    }
-    Index lastIndex = request.getPreviousIndex();
-    if (!stateManager.hasCommit(lastIndex)) {
-      return true;
-    }
-    Entry commit = stateManager.readCommit(lastIndex);
-    return !commit.getTerm().equals(request.getPreviousTerm());
-  }
-
-  private AppendResult failureResponse() {
-    return AppendResult.newBuilder()
-        .setSuccess(false)
-        .setTerm(getCurrentTerm())
-        .build();
-  }
-
   Peer getSelf() {
     return self;
   }
@@ -300,7 +206,7 @@ public final class RaftReplicator implements CommitReplicator,
     executor.execute(controller);
   }
 
-  private void convertToFollower() {
+  void convertToFollower() {
     state = InstanceState.FOLLOWER;
     controller = new FollowerController(this, executor, clock);
   }
@@ -320,6 +226,50 @@ public final class RaftReplicator implements CommitReplicator,
         .setNumber(nextTerm)
         .build();
     return prior;
+  }
+
+  void writeCommit(Entry commit) {
+    stateManager.writeCommit(commit);
+  }
+
+  void setCommitted(CommitIndex commitIndex) {
+    this.committed = commitIndex;
+  }
+
+  void setCurrentTerm(Term leaderTerm) {
+    this.currentTerm = leaderTerm;
+  }
+
+  void setLeader(Peer leader) {
+    this.leader = leader;
+  }
+
+  void refreshLastUpdated() {
+    this.lastUpdatedTime = clock.currentTime();
+  }
+
+  void flushCommits() {
+    executor.execute(new CommitWriter(this, stateManager, commitHandler));
+  }
+
+  boolean isEmpty() {
+    return stateManager.isEmpty();
+  }
+
+  boolean hasCommit(Index index) {
+    return stateManager.hasCommit(index);
+  }
+
+  Entry readCommit(Index index) {
+    return stateManager.readCommit(index);
+  }
+
+  void removeCommit(Index index) {
+    stateManager.removeCommit(index);
+  }
+
+  Controller getController() {
+    return controller;
   }
 
   /**

@@ -1,12 +1,15 @@
 package digital.upgrade.replication.raft;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import digital.upgrade.replication.raft.Raft.AppendRequest;
+import digital.upgrade.replication.raft.Raft.AppendResult;
 import digital.upgrade.replication.raft.Raft.Peer;
 import digital.upgrade.replication.raft.Raft.Term;
 import digital.upgrade.replication.raft.Raft.VoteRequest;
 import digital.upgrade.replication.raft.Raft.VoteResult;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.time.Duration;
 import java.util.Collection;
@@ -35,7 +38,7 @@ public class CandidateController implements Controller, RequestVoteResponseListe
   @Override
   public void run() {
     Term nextTerm = replicator.incrementTerm();
-    replicator.handleVoteRequest(voteRequest(nextTerm));
+    handleVoteRequest(voteRequest(nextTerm));
     Collection<Peer> peers = transport.peers();
     int peerCount = peers.size();
     votes = new CountDownLatch(peerCount);
@@ -74,5 +77,15 @@ public class CandidateController implements Controller, RequestVoteResponseListe
       LOG.debug("Peer {} rejected vote for {} in term {}", peer, voteRequest.getCandidate(),
           voteResult.getVoterTerm());
     }
+  }
+
+  @Override
+  public AppendResult handleAppend(AppendRequest request) {
+    throw new NotImplementedException();
+  }
+
+  @Override
+  public VoteResult handleVoteRequest(VoteRequest voteRequest) {
+    throw new NotImplementedException();
   }
 }
